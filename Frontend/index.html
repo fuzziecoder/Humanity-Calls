@@ -29,10 +29,11 @@
     <meta name="msapplication-TileColor" content="#ffffff" />
     <meta name="theme-color" content="#ffffff" />
 
+    <!-- Google Fonts: Poppins (body), Inter (fallback), Syne (accents) -->
     <link
       rel="preload"
       as="style"
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap"
       onload="
         this.onload = null;
         this.rel = 'stylesheet';
@@ -41,28 +42,29 @@
     <noscript>
       <link
         rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap"
       />
     </noscript>
 
+    <!-- Critical CSS — prevents FOUC while fonts & Tailwind load -->
     <style>
       body {
         font-family:
           "Poppins",
+          "Inter",
           system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
+          Avenir,
+          Helvetica,
+          Arial,
           sans-serif;
         background-color: #ffffff;
-        color: #4a4a68;
+        color: #1a1a1a;
         scroll-behavior: smooth;
       }
       nav {
         position: sticky;
         top: 0;
         z-index: 50;
-        background-color: #ffffff;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
       }
       section {
         position: relative;
@@ -74,17 +76,6 @@
         display: block;
       }
     </style>
-
-    <script type="importmap">
-      {
-        "imports": {
-          "react/": "https://esm.sh/react@^19.2.3/",
-          "react": "https://esm.sh/react@^19.2.3",
-          "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-          "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0"
-        }
-      }
-    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,8 +1,10 @@
 import React, { useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import SEO from "../components/SEO";
+import PrimaryCTA from "../components/Common/PrimaryCTA";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -11,95 +13,8 @@ const WallOfFame = () => {
   const containerRef = useRef(null);
 
   useLayoutEffect(() => {
-    const isMobile = window.innerWidth < 768;
-    const yOffset = isMobile ? 15 : 30;
-
-    const ctx = gsap.context(() => {
-      const heading = document.querySelector('[data-animation="wof-heading"]');
-      const story = document.querySelector('[data-animation="wof-story"]');
-      const team = document.querySelector('[data-animation="wof-team"]');
-      const institutions = document.querySelectorAll(
-        '[data-animation="wof-inst"]',
-      );
-
-      if (heading) {
-        gsap.fromTo(
-          heading,
-          { opacity: 0, y: yOffset },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.7,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: heading,
-              start: "top 80%",
-              once: true,
-            },
-          },
-        );
-      }
-
-      if (story) {
-        gsap.fromTo(
-          story,
-          { opacity: 0, y: yOffset },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.7,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: story,
-              start: "top 80%",
-              once: true,
-            },
-          },
-        );
-      }
-
-      if (team) {
-        gsap.fromTo(
-          team,
-          { opacity: 0, y: yOffset },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.7,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: team,
-              start: "top 80%",
-              once: true,
-            },
-          },
-        );
-      }
-
-      if (institutions.length > 0) {
-        institutions.forEach((inst, idx) => {
-          gsap.fromTo(
-            inst,
-            { opacity: 0, scale: 0.9, y: 20 },
-            {
-              opacity: 1,
-              scale: 1,
-              y: 0,
-              duration: 0.6,
-              delay: idx * 0.1,
-              ease: "power2.out",
-              scrollTrigger: {
-                trigger: inst,
-                start: "top 85%",
-                once: true,
-              },
-            },
-          );
-        });
-      }
-    }, containerRef);
-
-    return () => ctx.revert();
+    // Smooth scroll setup or other minor layout adjustments if needed
+    window.scrollTo(0, 0);
   }, [i18n.language]);
 
   const collaborators = [
@@ -169,67 +84,139 @@ const WallOfFame = () => {
   ];
 
   return (
-    <div className="bg-white min-h-screen" ref={containerRef}>
+    <div className="bg-white" ref={containerRef}>
       <SEO
         title={t("wall_of_fame.seo_title")}
         description={t("wall_of_fame.seo_desc")}
       />
 
-      {/* Heading on Top */}
-      <div
-        className="pt-24 pb-16 text-center bg-white"
-        data-animation="wof-heading"
-      >
-        <h1 className="text-5xl md:text-6xl font-extrabold text-primary mb-6">
-          {t("wall_of_fame.title")}
-        </h1>
-        <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto px-4">
-          {t("wall_of_fame.hero_subtitle")}
-        </p>
-      </div>
+      {/* Hero Section */}
+      <section className="pt-40 pb-24 text-center px-[5%] bg-[#fcf8f8] overflow-hidden">
+        <motion.div
+           initial={{ opacity: 0, y: 30 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+           className="max-w-5xl mx-auto space-y-8"
+        >
+          <div className="space-y-4">
+            <span className="text-emerald-500 text-[10px] uppercase tracking-[0.4em] font-black">
+              Collaborators
+            </span>
+            <h1 
+              className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight text-[#1a1a1a] leading-[0.9]"
+              style={{ fontFamily: '"Syne", sans-serif' }}
+            >
+              Wall of <br />
+              <span className="text-[#10B981] italic">Fame</span>
+            </h1>
+          </div>
+          <p className="text-xl md:text-2xl text-gray-400 font-light max-w-3xl mx-auto lowercase">
+            {t("wall_of_fame.hero_subtitle")}
+          </p>
+        </motion.div>
+      </section>
 
-      {/* Full Width Banner */}
-      <div className="w-full">
+      {/* Hero Banner */}
+      <motion.section 
+        initial={{ opacity: 0, scale: 1.05 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
+        className="w-full relative h-[40vh] md:h-[60vh] overflow-hidden"
+      >
         <img
           src="https://res.cloudinary.com/daokrum7i/image/upload/v1767858724/hc_wall_of_fame_qb8ckv.avif"
           alt="Wall of Fame Banner"
-          className="w-full h-auto object-cover block"
+          className="w-full h-full object-cover block"
         />
-      </div>
+        <div className="absolute inset-0 bg-black/5" />
+      </motion.section>
 
-      <div className="max-w-7xl mx-auto px-[5%] py-20">
+      <div className="max-w-none mx-auto px-[5%] py-32 space-y-40">
         {/* Our Journey Section */}
-        <div className="mb-24 text-center" data-animation="wof-story">
-          <h2 className="text-4xl font-bold text-primary mb-8 relative inline-block">
-            {t("wall_of_fame.story_title")}
-            <span className="absolute -bottom-2 left-0 w-full h-1 bg-primary/20 rounded-full"></span>
-          </h2>
-          <div className="space-y-6 max-w-4xl mx-auto">
-            <p className="text-xl text-gray-700 leading-relaxed">
-              {t("wall_of_fame.story_para1")}
-            </p>
-            <p className="text-xl text-gray-700 leading-relaxed">
-              {t("wall_of_fame.story_para2")}
-            </p>
-          </div>
-        </div>
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <span className="text-indigo-500 text-[10px] uppercase tracking-[0.4em] font-black">
+                  Our Journey
+                </span>
+                <h2 
+                  className="text-4xl md:text-6xl font-bold text-[#1a1a1a]"
+                  style={{ fontFamily: '"Syne", sans-serif' }}
+                >
+                  Strength in <br />
+                  <span className="text-[#4F46E5] italic">Unity</span>
+                </h2>
+              </div>
+              <p className="text-lg md:text-xl text-gray-500 font-light leading-relaxed lowercase italic border-l-2 border-indigo-500/20 pl-8">
+                {t("wall_of_fame.story_para1")}
+              </p>
+              <p className="text-lg md:text-xl text-gray-500 font-light leading-relaxed lowercase">
+                 {t("wall_of_fame.story_para2")}
+              </p>
+            </div>
+
+            <div className="relative group">
+              <div className="bg-[#fcf8f8] p-12 rounded-[40px] border border-black/5 relative overflow-hidden">
+                <blockquote className="text-2xl md:text-3xl text-[#1a1a1a] font-light leading-relaxed italic lowercase">
+                    {t("wall_of_fame.quote")}
+                </blockquote>
+                <div className="mt-8 flex items-center gap-4">
+                   <div className="w-10 h-px bg-indigo-500/30" />
+                   <span className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-500">Global Vision</span>
+                </div>
+              </div>
+              {/* Decorative Glow */}
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl -z-10" />
+            </div>
+        </section>
 
         {/* Collaborators Grid */}
-        <div className="mb-24">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
-            {collaborators.map((collab) => (
-              <div
+        <section className="space-y-16">
+          <div className="text-center space-y-4">
+             <span className="text-[#E74C3C] text-[10px] uppercase tracking-[0.4em] font-black">Our Partners</span>
+             <h2 className="text-4xl md:text-6xl font-bold text-[#1a1a1a]" style={{ fontFamily: '"Syne", sans-serif' }}>
+               Top Level <span className="text-[#E74C3C] italic">Collaborators</span>
+             </h2>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-10 lg:gap-14">
+            {collaborators.map((collab, idx) => (
+              <motion.div
                 key={collab.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ 
+                  opacity: 1, 
+                  y: 0,
+                  transition: { delay: idx * 0.05, duration: 0.8 }
+                }}
+                viewport={{ once: true }}
+                animate={{ 
+                  y: [0, -8, 0],
+                  transition: { 
+                    duration: 4 + (idx % 3),
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: idx * 0.2
+                  } 
+                }}
                 className="relative group flex flex-col items-center"
-                data-animation="wof-inst"
               >
-                {/* Improved Golden Frame Design */}
-                <div className="relative p-[4px] rounded-xl overflow-hidden shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2">
-                  {/* Metallic Gradient Border */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#BF953F] via-[#FCF6BA] to-[#B38728] animate-shimmer"></div>
+                {/* Premium Frame Design */}
+                <motion.div
+                  whileHover={{ 
+                    scale: 1.05,
+                    rotateX: 5,
+                    rotateY: 5,
+                    z: 50
+                  }}
+                  className="relative w-full aspect-square p-px rounded-[32px] overflow-hidden bg-white/40 backdrop-blur-xs border border-white/20 hover:bg-white/60 transition-all duration-700 shadow-xl shadow-black/2 hover:shadow-2xl hover:shadow-black/5"
+                  style={{ transformStyle: "preserve-3d" }}
+                >
+                  {/* Subtle Metallic Liquid Gradient Border on Hover */}
+                  <div className="absolute inset-0 bg-linear-to-br from-[#BF953F] via-[#FCF6BA] to-[#B38728] opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-shimmer" />
 
                   {/* Inner Content Area */}
-                  <div className="relative bg-white rounded-[10px] p-4 md:p-6 aspect-square flex items-center justify-center overflow-hidden">
+                  <div className="absolute inset-px bg-white rounded-[31px] p-8 md:p-10 flex items-center justify-center overflow-hidden">
                     {collab.link ? (
                       <a
                         href={collab.link}
@@ -240,31 +227,39 @@ const WallOfFame = () => {
                         <img
                           src={collab.image}
                           alt="Collaborator Logo"
-                          className="max-w-full max-h-full object-contain group-hover:grayscale-0 transition-all duration-500"
+                          className="max-w-full max-h-full object-contain transition-all duration-700 ease-smooth scale-95 group-hover:scale-105"
+                          loading="lazy"
                         />
                       </a>
                     ) : (
                       <img
                         src={collab.image}
                         alt="Collaborator Logo"
-                        className="max-w-full max-h-full object-contain grayscale-[20%] group-hover:grayscale-0 transition-all duration-500"
+                        className="max-w-full max-h-full object-contain transition-all duration-700 ease-smooth scale-95 group-hover:scale-105"
+                        loading="lazy"
                       />
                     )}
                   </div>
-                </div>
-              </div>
+
+                  {/* Card Glow Reveal */}
+                  <div className="absolute inset-0 bg-[#BF953F]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                </motion.div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </section>
 
-        <hr className="my-20 border-gray-200" />
-
-        <div className="mt-20 text-center">
-          <p className="text-2xl text-gray-500 mb-8 italic font-serif">
-            {t("wall_of_fame.quote")}
-          </p>
-          <div className="w-24 h-1.5 bg-primary mx-auto rounded-full shadow-sm"></div>
-        </div>
+        {/* Join Subsection */}
+        <section className="text-center space-y-12">
+            <div className="w-24 h-[2px] bg-black/5 mx-auto" />
+            <PrimaryCTA 
+              to="/collaborate" 
+              accentColor="#10B981"
+              className="flex justify-center"
+            >
+              Collaborate with us
+            </PrimaryCTA>
+        </section>
       </div>
 
       <style

@@ -1,11 +1,11 @@
 import React, { useLayoutEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import gsap from "gsap";
 import Button from "./Button";
 import cortexLogo from "../assets/cortexlogo.png";
-import ContactForm from "./ContactForm";
-import { SOCIAL_LINKS } from "../constants";
+import { SOCIAL_LINKS, WHATSAPP_NUMBER } from "../constants";
 import { animateFooterElements } from "../utils/animations";
 
 const Footer = () => {
@@ -24,142 +24,180 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[#1A1A1A] text-white pt-20 pb-10" ref={footerRef}>
+    <footer className="bg-[#080808] text-white pt-32 pb-12 overflow-hidden border-t border-white/5" ref={footerRef}>
       <div className="max-w-none mx-auto px-[5%]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          {/* Contact Form */}
-          <div id="contact" className=" p-8 rounded-2xl">
-            <h3 className="text-3xl font-bold mb-8 text-white relative">
-              {t("footer.contact_us")}
-              <span className="absolute -bottom-2 left-0 w-12 h-1 bg-primary"></span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-24 mb-24">
+          
+          {/* Column 1: Company */}
+          <div className="space-y-10">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#6366F1]">
+              Organization
             </h3>
-            <ContactForm dark={true} />
+            <ul className="flex flex-col gap-5">
+              {[
+                { to: "/about", label: "About Us" },
+                { to: "/gallery", label: "Gallery" },
+                { to: "/volunteer", label: "Volunteer" },
+                { to: "/collaborate", label: "Collaborate" },
+                { to: "/wall-of-fame", label: "Wall of Fame" },
+              ].map((link) => (
+                <FooterLink key={link.to} to={link.to} hoverColor="#6366F1">{link.label}</FooterLink>
+              ))}
+            </ul>
           </div>
 
-          {/* Quick Links & Info */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
-            <div>
-              <h3 className="text-xl font-bold mb-8 text-white tracking-wide uppercase">
-                {t("footer.quick_links")}
+          {/* Column 2: Missions */}
+          <div className="space-y-10">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#10B981]">
+              Our Missions
+            </h3>
+            <ul className="flex flex-col gap-5">
+              {[
+                { to: "/request-donors", label: "Blood Donation" },
+                { to: "/animal-rescue", label: "Animal Rescue" },
+                { to: "/poor-needy", label: "Poor & Needy" },
+                { to: "/donations-made", label: "Impact Archive" },
+              ].map((link) => (
+                <FooterLink key={link.to} to={link.to} hoverColor="#10B981">{link.label}</FooterLink>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Resource */}
+          <div className="space-y-10">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#F59E0B]">
+              Resources
+            </h3>
+            <ul className="flex flex-col gap-5">
+              {[
+                { to: "/donate", label: "Donate Now" },
+                { to: "/request-donors", label: "Find Donors" },
+                { to: "/contact", label: "Get In Touch" },
+                { to: "/faq", label: "Support FAQ" },
+              ].map((link) => (
+                <FooterLink key={link.to} to={link.to} hoverColor="#F59E0B">{link.label}</FooterLink>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 4: Newsletter/Social */}
+          <div className="space-y-12">
+            <div className="space-y-8">
+              <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#EF4444]">
+                Contact Info
               </h3>
-              <ul className="space-y-4">
-                {[
-                  { to: "/about", label: t("common.about_us") },
-                  {
-                    to: "/request-donors",
-                    label: t("common.request_for_donors"),
-                  },
-                  { to: "/poor-needy", label: t("common.poor_needy") },
-                  { to: "/animal-rescue", label: t("common.animal_rescue") },
-                  { to: "/volunteer", label: t("common.volunteer") },
-                  { to: "/collaborate", label: t("common.collaborate") },
-                  { to: "/donations-made", label: t("nav.donations_made") },
-                  { to: "/wall-of-fame", label: t("nav.wall_of_fame") },
-                  { to: "/donate", label: t("nav.donate_now") },
-                ].map((link) => (
-                  <li key={link.to}>
-                    <Link
-                      to={link.to}
-                      className="text-gray-400 hover:text-white hover:underline transition-all duration-300 flex items-center focus:outline-none focus:ring-2 focus:ring-white rounded px-1"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold mb-8 text-white tracking-wide uppercase">
-                {t("footer.get_in_touch")}
-              </h3>
-              <div className="space-y-6">
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
-                    {t("footer.office_address_title")}
-                  </p>
-                  <p className="text-white/90 leading-relaxed whitespace-pre-line">
-                    {t("footer.office_address_value")}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
-                    {t("footer.email_inquiries")}
-                  </p>
-                  <a
-                    href="mailto:humanitycallsnotify@gmail.com"
-                    className="text-white hover:text-gray-300 hover:underline transition-colors"
-                  >
-                    humanitycallsnotify@gmail.com
-                  </a>
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
-                    {t("footer.phone_numbers")}
-                  </p>
-                  <a
-                    href="tel:+918867713031"
-                    className="text-white hover:text-gray-300 hover:underline transition-colors"
-                  >
-                    +91 8867713031
-                  </a>
-                </div>
+              <div className="space-y-5">
+                <a href="mailto:humanitycallsnotify@gmail.com" className="block text-xl md:text-2xl font-bold text-white hover:text-[#EF4444] transition-colors duration-500" style={{ fontFamily: '"Syne", sans-serif' }}>
+                  Get in touch
+                </a>
+                <p className="text-[15px] text-white/50 font-light leading-relaxed max-w-[240px]" style={{ fontFamily: '"Poppins", sans-serif' }}>
+                  Join our community of donors and make a difference today.
+                </p>
               </div>
+            </div>
+
+            <div className="flex flex-wrap gap-6">
+              {SOCIAL_LINKS.map((social) => {
+                const platformColors = {
+                  Facebook: "#1877F2",
+                  Instagram: "#E4405F",
+                  X: "#000000",
+                  WhatsApp: "#25D366",
+                  Telegram: "#0088CC",
+                  Youtube: "#FF0000"
+                };
+                const color = platformColors[social.name] || "#4F46E5";
+
+                return (
+                  <motion.a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover="hover"
+                    initial="initial"
+                    className="group/social relative w-12 h-12 shrink-0 rounded-full border border-white/10 flex items-center justify-center overflow-hidden transition-colors duration-500"
+                    aria-label={`Follow us on ${social.name}`}
+                  >
+                    {/* Unique platform-specific background fill */}
+                    <motion.div 
+                      variants={{
+                        initial: { y: "100%" },
+                        hover: { y: 0 }
+                      }}
+                      transition={{ duration: 0.4, ease: [0.76, 0, 0.24, 1] }}
+                      className="absolute inset-0 z-0"
+                      style={{ backgroundColor: color }}
+                    />
+                    
+                    {/* Icon container with magnetic lift */}
+                    <motion.div
+                      variants={{
+                        initial: { y: 0, color: "rgba(255,255,255,0.3)" },
+                        hover: { y: -2, color: "#fff" }
+                      }}
+                      className="relative z-10"
+                    >
+                      <social.icon className="w-5 h-5 transition-transform duration-500 group-hover/social:scale-110" />
+                    </motion.div>
+                  </motion.a>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        <div className="mt-20 pt-10 border-t border-white/10 flex flex-col items-center">
-          <div className="flex space-x-8 mb-8">
-            {SOCIAL_LINKS.map((social) => (
-              <a
-                key={social.name}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-all transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white rounded p-1"
-                aria-label={`Follow us on ${social.name}`}
-              >
-                <social.icon className="w-6 h-6" />
-              </a>
-            ))}
+        {/* Bottom Bar */}
+        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 text-[11px] font-black uppercase tracking-[0.2em] text-white/30">
+          {/* Left: Designer Credit */}
+          <a href="https://www.cortexit.in" target="_blank" className="hover:scale-[1.02] transition-transform order-3 md:order-1">
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <p className="text-white text-[10px] font-medium tracking-widest opacity-60">DESIGNED AND DEVELOPED BY</p>
+              <div className="flex items-center gap-3">
+                <img className="h-8" src={cortexLogo} alt="Cortex" />
+                <p className="text-white text-base font-black tracking-tighter">CORTEX™</p>
+              </div>
+            </div>
+          </a>
+
+          {/* Center: Copyright */}
+          <div className="text-center order-2">
+            © 2026 Humanity Calls Trust®. All rights reserved.
           </div>
 
-          <div className="flex flex-wrap justify-center gap-6 mb-8 text-xs text-white/60 font-medium">
+          {/* Right: Legal Links */}
+          <div className="flex flex-wrap justify-center md:justify-end gap-8 order-1 md:order-3">
             {[
-              { to: "/terms", label: t("footer.terms_conditions") },
-              { to: "/privacy", label: t("footer.privacy_policy") },
-              { to: "/disclaimer", label: t("footer.disclaimer") },
+              { to: "/terms", label: "Terms" },
+              { to: "/privacy", label: "Privacy" },
+              { to: "/disclaimer", label: "Disclaimer" },
             ].map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="hover:text-white hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded px-1"
-              >
+              <Link key={link.to} to={link.to} className="hover:text-white transition-colors">
                 {link.label}
               </Link>
             ))}
           </div>
-
-          <p className="text-sm text-white/60 text-center">
-            © 2026 Humanity Calls Trust®. All Rights Reserved.
-          </p>
-          <a href="https://www.cortexit.in" target="_blank">
-            <div className="flex items-center gap-2 text-[#E2ECED] text-xs font-bold text-center mt-4 hover:text-[#E2ECED]/80 transition-colors cursor-pointer">
-              <p className="">Designed and Developed by</p>
-              <div className="flex items-center ">
-                <img
-                  className="h-9"
-                  src={cortexLogo}
-                  alt="Cortex"
-                />
-                <p>CORTEX™</p>
-              </div>
-            </div>
-          </a>
         </div>
       </div>
     </footer>
   );
 };
+
+const FooterLink = ({ to, children, hoverColor }) => (
+  <motion.li whileHover={{ x: 8 }} transition={{ duration: 0.4, ease: [0.76, 0, 0.24, 1] }}>
+    <Link 
+      to={to} 
+      className="group flex items-center gap-3 text-[15px] font-medium text-white/40 transition-all duration-500"
+      style={{ 
+        fontFamily: '"Poppins", sans-serif',
+      }}
+    >
+      <span className="w-0 h-[1.5px] group-hover:w-4 transition-all duration-500" style={{ backgroundColor: hoverColor }} />
+      <span className="group-hover:text-white" style={{ transition: 'color 0.4s ease' }}>
+        {children}
+      </span>
+    </Link>
+  </motion.li>
+);
 
 export default Footer;

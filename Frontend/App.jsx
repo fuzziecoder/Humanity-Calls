@@ -11,6 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { UserProvider } from "./context/UserContext";
 import Navbar from "./components/Navbar";
 import ContactFloatingButton from "./components/WhatsAppButton";
+import SmoothScroll from "./components/SmoothScroll";
 import Home from "./pages/Home";
 
 
@@ -50,12 +51,24 @@ const PageLoader = () => (
   </div>
 );
 
-// ScrollToTop component to reset scroll on route change
+// ScrollToTop component to reset scroll on route change or handle hash links
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+  
   React.useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (hash) {
+      const element = document.getElementById(hash.slice(1));
+      if (element) {
+        // Delay slightly to ensure the page has rendered
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
+  
   return null;
 };
 
@@ -63,9 +76,11 @@ const App = () => {
   return (
     <UserProvider>
       <Router>
+        <SmoothScroll>
         <ToastContainer theme="dark" position="top-center" />
         <ScrollToTop />
         <AppContent />
+        </SmoothScroll>
       </Router>
     </UserProvider>
   );

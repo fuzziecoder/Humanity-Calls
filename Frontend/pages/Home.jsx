@@ -1,25 +1,26 @@
 import React, { useLayoutEffect, useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
+import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import SEO from "../components/SEO";
 import Button from "../components/Button";
-import HeroCarousel from "../components/HeroCarousel";
-import hclogo from "../assets/humanitycallslogo.avif";
+import HeroSection from "../components/HeroSection";
 import { IMAGE_ALTS, PROGRAMS } from "../constants";
 import {
   animateTitleIn,
   animateParagraphIn,
   animateCards,
 } from "../utils/animations";
+import PinnedStackingCards from "../components/PinnedStackingCards";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Home = () => {
   const { t, i18n } = useTranslation();
   const containerRef = useRef(null);
-  const [visibleCount, setVisibleCount] = useState(6);
+  const [visibleCount, setVisibleCount] = useState(8);
   const prevVisibleCount = useRef(0);
 
   const handleLoadMore = () => {
@@ -74,15 +75,6 @@ const Home = () => {
     const yOffset = isMobile ? 20 : 40;
 
     const ctx = gsap.context(() => {
-      const heroTitle = document.querySelector('[data-animation="hero-title"]');
-      const heroParagraph = document.querySelector(
-        '[data-animation="hero-paragraph"]',
-      );
-      const heroImage = document.querySelector('[data-animation="hero-image"]');
-      const heroGlow = document.querySelector('[data-animation="hero-glow"]');
-      const heroButtons = document.querySelectorAll(
-        '[data-animation="hero-button"]',
-      );
       const bloodDonationSection = document.querySelector(
         '[data-animation="blood-section"]',
       );
@@ -110,87 +102,6 @@ const Home = () => {
       const newsletterSection = document.querySelector(
         '[data-animation="newsletter-section"]',
       );
-
-      if (!isMobile) {
-        if (heroTitle) {
-          animateTitleIn(heroTitle);
-        }
-
-        if (heroParagraph) {
-          animateParagraphIn(heroParagraph);
-        }
-
-        if (heroButtons.length > 0) {
-          gsap.fromTo(
-            heroButtons,
-            { opacity: 0, y: yOffset, scale: 0.9 },
-            {
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              duration: 0.7,
-              stagger: 0.15,
-              delay: 0.6,
-              ease: "back.out(1.7)",
-              scrollTrigger: {
-                trigger: heroButtons[0],
-                start: "top 95%",
-                once: true,
-              },
-            },
-          );
-        }
-
-        if (heroGlow) {
-          gsap.fromTo(
-            heroGlow,
-            { opacity: 0, scale: 0.5 },
-            {
-              opacity: 1,
-              scale: 1.2,
-              duration: 2,
-              repeat: -1,
-              yoyo: true,
-              ease: "sine.inOut",
-            },
-          );
-        }
-
-        if (heroImage) {
-          gsap.set(heroImage, { willChange: "transform, opacity" });
-          gsap.fromTo(
-            heroImage,
-            { opacity: 0, scale: 0.8, x: 100, rotate: 5 },
-            {
-              opacity: 1,
-              scale: 1,
-              x: 0,
-              rotate: 0,
-              duration: 1.2,
-              ease: "elastic.out(1, 0.75)",
-              scrollTrigger: {
-                trigger: heroImage,
-                start: "top 80%",
-                once: true,
-              },
-              onComplete: () => {
-                gsap.set(heroImage, { willChange: "auto" });
-                gsap.to(heroImage, {
-                  y: 15,
-                  duration: 2,
-                  repeat: -1,
-                  yoyo: true,
-                  ease: "power1.inOut",
-                });
-              },
-            },
-          );
-        }
-      } else {
-        if (heroImage) {
-          gsap.set(heroImage, { opacity: 1, scale: 1, x: 0, rotate: 0 });
-        }
-      }
 
       if (bloodDonationSection) {
         gsap.fromTo(
@@ -412,399 +323,254 @@ const Home = () => {
       />
 
       {/* Hero Section */}
-      <section className="relative py-16 flex items-center overflow-hidden">
-        <div className="absolute inset-0 px-[5%] py-4">
-          <div className="relative w-full h-full overflow-hidden">
-            <HeroCarousel />
-          </div>
-        </div>
-        <div className="max-w-none mx-auto px-[10%] w-full relative z-10 py-12">
-          <div className="max-w-3xl space-y-8">
-            <h1
-              key={i18n.language}
-              className="flex flex-col font-bold leading-tight"
-              data-animation="hero-title"
-            >
-              <span
-                className="text-3xl md:text-5xl text-white/80 mb-2 drop-shadow-md"
-                style={{
-                  WebkitTextStroke: "2px rgba(40,175,176,0.8)",
-                  paintOrder: "stroke fill",
-                }}
-              >
-                {t("home.hero_title_help")}
-              </span>
-              <span className="relative inline-flex items-center group">
-                <span
-                  className="text-6xl md:text-8xl relative z-10 bg-gradient-to-r from-primary via-white to-primary bg-clip-text text-transparent animate-gradient-text drop-shadow-[0_0_1px_rgba(40,175,176,0.8)]"
-                  style={{
-                    WebkitTextStroke: "1.5px rgba(40,175,176,0.4)",
-                    paintOrder: "stroke fill",
-                  }}
-                >
-                  {t("home.hero_title_humanity")}
-                </span>
+      <HeroSection />
 
-                <span className="inline-flex items-center ml-4">
-                  <span className="inline-block animate-bounce">
-                    <img
-                      src={hclogo}
-                      alt="logo"
-                      className="w-10 h-10 md:w-16 md:h-16 filter drop-shadow-[0_0_15px_rgba(40,175,176,0.6)]"
-                    />
-                  </span>
-                </span>
-              </span>
-            </h1>
-            <p
-              className="text-xl text-white/90 max-w-lg leading-relaxed"
-              data-animation="hero-paragraph"
-            >
-              {t("home.hero_paragraph")}
-            </p>
-            <div className="flex flex-wrap gap-6 lg:gap-4">
-              <Link to="/collaborate">
-                <Button
-                  className="inline-flex items-center justify-center min-h-[48px] px-8 py-4 rounded-md focus:outline-none focus:ring-4 focus:ring-primary/20 transition shadow-lg"
-                  data-animation="hero-button"
-                >
-                  {t("home.collaborate_with_us")}
-                </Button>
-              </Link>
-              <Link to="/volunteer">
-                <Button
-                  variant="white"
-                  data-animation="hero-button"
-                  className="bg-secondary !hover:bg-transparent !text-primary"
-                >
-                  {t("home.volunteer_with_us")}
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Stacking Cards Section */}
+      <PinnedStackingCards />
 
-      {/* Poor/Needy Section */}
-      <section
-        className="bg-[#1a1c2c] text-white py-12 overflow-hidden"
-        data-animation="poor-needy-section"
-      >
-        <div className="max-w-none mx-auto px-[5%]">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="relative lg:order-2 px-4 md:px-0">
-              <div className="absolute inset-0 bg-secondary/10 blur-3xl rounded-full -z-10"></div>
-              <img
-                src="https://res.cloudinary.com/daokrum7i/image/upload/f_auto,q_auto,w_800,c_limit/v1767814233/humanity_calls_poor_needy_oef47s.avif"
-                alt={IMAGE_ALTS.poorNeedy}
-                data-animation="poor-needy-image"
-                className="rounded-2xl border border-white/10 w-full object-cover aspect-[3/2] shadow-2xl"
-                width="800"
-                height="533"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-            <div className="space-y-6 lg:order-1">
-              <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                {t("home.help_poor_needy_title")}
-              </h2>
-              <p className="text-lg text-white/70 leading-relaxed max-w-xl">
-                {t("home.poor_needy_paragraph")}
-              </p>
-              <Link to="/poor-needy" className="inline-block">
-                <Button
-                  variant="white"
-                  className="!bg-white !text-[#1a1c2c] hover:!bg-primary hover:!text-white transition-all"
-                >
-                  {t("home.support_today")}
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Animal Rescue Section */}
-      <section
-        className="bg-[#0f1f0f] text-white py-12 overflow-hidden"
-        data-animation="animal-rescue-section"
-      >
-        <div className="max-w-none mx-auto px-[5%]">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="relative px-4 md:px-0">
-              <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full -z-10"></div>
-              <img
-                src="https://res.cloudinary.com/daokrum7i/image/upload/f_auto,q_auto,w_800,c_limit/v1767814232/humanity_calls_animal_resque_dxz9jb.avif"
-                alt={IMAGE_ALTS.animalRescue}
-                data-animation="animal-rescue-image"
-                className="rounded-2xl border border-white/10 w-full object-cover aspect-[3/2] shadow-2xl"
-                width="800"
-                height="533"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-            <div className="space-y-6">
-              <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                {t("home.animal_rescue_title")}
-              </h2>
-              <p className="text-lg text-white/70 leading-relaxed max-w-xl">
-                {t("home.animal_rescue_paragraph")}
-              </p>
-              <Link to="/animal-rescue" className="inline-block">
-                <Button
-                  variant="white"
-                  className="!bg-white !text-[#0f1f0f] hover:!bg-primary hover:!text-white transition-all"
-                >
-                  {t("home.rescue_today")}
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* Blood Donation Section */}
-      <section
-        className="bg-blood text-white py-12 overflow-hidden border-y border-border"
-        data-animation="blood-section"
-      >
-        <div className="max-w-none mx-auto px-[5%]">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-6">
-              <h2 className="text-4xl md:text-5xl font-bold text-white">
-                {t("home.donate_blood_save_lives")}
-              </h2>
-              <p className="text-lg text-white/90 leading-relaxed">
-                {t("home.blood_donation_paragraph")}
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link to="/donate">
-                  <Button
-                    variant="white"
-                    className="!bg-white !text-[#1a1c2c] hover:!bg-primary hover:!text-white transition-all"
-                  >
-                    {t("nav.donate_now")}
-                  </Button>
-                </Link>
-                <Link to="/request-donors">
-                  <Button
-                    variant="white"
-                    className="!bg-transparent !text-white border-2 border-white hover:!bg-white hover:!text-blood transition-all"
-                  >
-                    {t("nav.request_for_donors")}
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full -z-10"></div>
-              <img
-                src="https://res.cloudinary.com/daokrum7i/image/upload/f_auto,q_auto,w_800/v1767814232/hc_blood_donation_mfwveo.png"
-                alt={IMAGE_ALTS.bloodDonation}
-                data-animation="blood-image"
-                className="rounded-2xl border border-white/20 w-full object-cover aspect-[3/2]"
-                width="800"
-                height="533"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section
-        className="bg-bg py-20 border-b border-border"
-        data-animation="stat-section"
-      >
+      {/* Highlight Mission Statement */}
+      <section className="pb-20 pt-8 bg-white overflow-hidden pointer-events-none">
         <div className="max-w-none mx-auto px-[5%] text-center">
-          <p className="text-3xl md:text-4xl font-bold text-primary">
-            <Trans
-              i18nKey="home.donors_count"
-              components={{ red: <span className="text-blood" /> }}
-            />
-          </p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: [0.76, 0, 0.24, 1] }}
+            className="flex flex-col items-center justify-center"
+          >
+            <h2 
+              className="text-lg md:text-2xl lg:text-3xl tracking-tight text-[#1a1a1a] font-bold"
+              style={{ fontFamily: '"Syne", sans-serif', textTransform: "uppercase" }}
+            >
+              1000+ donors and <span className="text-[#E74C3C] italic border-b-2 border-red-500/20">1 purpose</span> !
+            </h2>
+          </motion.div>
         </div>
       </section>
 
       {/* Programs & Projects */}
 
-      <section className="py-24 bg-[#1A1A1A] text-white">
+      {/* Programs & Projects */}
+      <section id="programs" className="py-24 bg-[#fcf8f8] text-[#1a1a1a]">
         <div className="max-w-none mx-auto px-[5%]">
-          <div className="text-center mb-16" data-animation="program-title">
-            <h2 className="text-4xl font-bold mb-6 text-white">
-              {t("about.programs_title")}
+          <div className="text-center mb-20" data-animation="program-title">
+            <motion.span
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="text-primary text-xs uppercase tracking-[0.4em] font-bold"
+            >
+              Our Impact
+            </motion.span>
+            <h2 className="text-4xl md:text-6xl font-bold mt-4 mb-6 pb-1 leading-tight text-[#1a1a1a]" style={{ fontFamily: '"Syne", sans-serif' }}>
+              Programs & <span className="text-[#10B981] italic">Projects</span>
             </h2>
-            <p className="max-w-2xl mx-auto text-gray-400 lowercase">
+            <p className="max-w-xl mx-auto text-gray-500 text-base md:text-lg font-light leading-relaxed">
               {t("about.programs_para")}
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {PROGRAMS.slice(0, visibleCount).map((p, idx) => (
-              <Link
-                key={`${p.id}-${idx}`}
-                to={`/programs/${p.id}`}
-                className="bg-[#2A2A2A] rounded-xl overflow-hidden hover:scale-105 hover:shadow-xl transition-all flex flex-col group cursor-pointer"
-                data-animation="program-card"
-              >
-                <img
-                  src={p.image}
-                  alt={p.alt}
-                  className="w-full h-48 object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                  loading="lazy"
-                  decoding="async"
-                  width="400"
-                  height="192"
-                  sizes="(max-width: 768px) 90vw, (max-width: 1024px) 45vw, 300px"
-                />
-                <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold mb-3 text-white uppercase">
-                    {t(`about.programs.${p.id}.title`)}
-                  </h3>
-                  <p className="text-gray-400 text-sm lowercase mb-4 flex-grow">
-                    {t(`about.programs.${p.id}.desc`)}
-                  </p>
-                  <div className="mt-auto flex justify-end">
-                    <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg bg-white/10 text-white/70 group-hover:bg-primary group-hover:text-white transition-all">
-                      {t("common.view_more") || "View More"} →
-                    </span>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+            {PROGRAMS.slice(0, visibleCount).map((p, idx) => {
+              const accentColors = [
+                "#10B981", // Emerald
+                "#F59E0B", // Amber
+                "#8B5CF6", // Violet
+                "#EF4444", // Rose
+                "#0EA5E9", // Sky
+                "#6366F1", // Indigo
+              ];
+              const accent = accentColors[idx % accentColors.length];
+
+              return (
+                <Link
+                  key={`${p.id}-${idx}`}
+                  to={`/programs/${p.id}`}
+                  className="group relative bg-white rounded-[32px] overflow-hidden transition-all duration-700 flex flex-col hover:-translate-y-4 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.06)] border border-black/4"
+                  data-animation="program-card"
+                >
+                  {/* Top Color Accent */}
+                  <div className="absolute top-0 left-0 w-full h-1.5 z-20" style={{ backgroundColor: accent }} />
+                  
+                  {/* Image Holder */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={p.image}
+                      alt={p.alt}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700 ease-out"
+                      loading="lazy"
+                      decoding="async"
+                      width="400"
+                      height="256"
+                    />
+                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500" />
                   </div>
-                </div>
-              </Link>
-            ))}
+
+                  {/* Card Content */}
+                  <div className="p-6 pb-8 flex flex-col grow space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span className="w-6 h-[1.5px]" style={{ backgroundColor: accent }} />
+                      <span className="text-[9px] uppercase tracking-[0.3em] font-black" style={{ color: accent }}>
+                        Project {idx + 1}
+                      </span>
+                    </div>
+
+                    <h3 
+                      className="text-xl font-bold text-[#1a1a1a] group-hover:text-primary transition-colors h-14 line-clamp-2"
+                      style={{ fontFamily: '"Syne", sans-serif', lineHeight: 1.1 }}
+                    >
+                      {t(`about.programs.${p.id}.title`)}
+                    </h3>
+                    
+                    <p className="text-gray-500 text-sm leading-relaxed grow line-clamp-3">
+                      {t(`about.programs.${p.id}.desc`)}
+                    </p>
+
+                    <div className="pt-4">
+                      <span 
+                        className="inline-flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 group-hover:gap-5"
+                        style={{ color: accent }}
+                      >
+                        Explore Case Study
+                        <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Glow effect on hover */}
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-700 pointer-events-none"
+                    style={{ background: `radial-gradient(circle at center, ${accent} 0%, transparent 70%)` }}
+                  />
+                </Link>
+              );
+            })}
           </div>
+
           {visibleCount < PROGRAMS.length && (
-            <div className="mt-12 flex justify-center">
-              <Button
+            <div className="mt-24 flex justify-center pb-20">
+              <motion.button
                 onClick={handleLoadMore}
-                variant="white"
-                className="!bg-white !text-black hover:!bg-primary hover:!text-white transition-all px-10 py-3"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                className="group relative px-14 py-6 bg-white rounded-full transition-all duration-500 overflow-hidden border border-black/8 shadow-[0_10px_30px_rgba(0,0,0,0.03)]"
               >
-                {t("common.load_more")}
-              </Button>
+                {/* Subtle Moving Prism Background */}
+                <div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none blur-xl"
+                  style={{ 
+                    background: "conic-gradient(from 0deg, #4F46E5, #10B981, #F59E0B, #4F46E5)",
+                    animation: "spin 4s linear infinite"
+                  }}
+                />
+                
+                {/* Glass Overlay */}
+                <div className="absolute inset-[2px] bg-white rounded-full z-0 group-hover:inset-[4px] transition-all duration-500" />
+
+                <motion.span 
+                  className="relative z-10 text-[12px] font-black uppercase tracking-[0.4em] text-[#1a1a1a] group-hover:tracking-[0.5em] transition-all duration-500 flex items-center gap-4"
+                >
+                  <span className="w-6 h-px bg-black/10 group-hover:bg-black/40 transition-colors" />
+                  Load Full Archive
+                  <span className="w-6 h-px bg-black/10 group-hover:bg-black/40 transition-colors" />
+                </motion.span>
+                
+                {/* Wide Prism Glow Shadow */}
+                <div className="absolute inset-x-10 bottom-0 h-px bg-linear-to-r from-transparent via-indigo-500/50 to-transparent opacity-0 group-hover:opacity-100 group-hover:shadow-[0_0_40px_10px_rgba(79,70,229,0.2)] transition-all duration-700 -z-10" />
+              </motion.button>
             </div>
           )}
         </div>
       </section>
 
-      {/* Cards Section */}
-      <section className="py-24 bg-white">
-        <div className="max-w-none mx-auto px-[5%]">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div
-              className="bg-white p-10 rounded-2xl shadow-md hover:shadow-xl transition-all border-t-4 border-blood"
-              data-animation="card"
-            >
-              <h3 className="text-2xl font-bold mb-4">
-                {t("home.donations_made_title")}
-              </h3>
-              <p className="text-text-body mb-8">
-                {t("home.donations_made_desc")}
-              </p>
-              <Link to="/donations-made">
-                <Button variant="secondary" className="w-full">
-                  {t("common.view_us")}
-                </Button>
-              </Link>
-            </div>
-            <div
-              className="bg-white p-10 rounded-2xl shadow-md hover:shadow-xl transition-all border border-gray-100"
-              data-animation="card"
-            >
-              <h3 className="text-2xl font-bold mb-4">
-                {t("home.become_member_title")}
-              </h3>
-              <p className="text-text-body mb-8">
-                {t("home.become_member_desc")}
-              </p>
-              <Link to="/volunteer">
-                <Button variant="primary" className="w-full">
-                  {t("volunteer.join_now")}
-                </Button>
-              </Link>
-            </div>
-            <div
-              className="bg-white p-10 rounded-2xl shadow-md hover:shadow-xl transition-all border-t-4 border-primary"
-              data-animation="card"
-            >
-              <h3 className="text-2xl font-bold mb-4">
-                {t("home.wall_of_fame_title")}
-              </h3>
-              <p className="text-text-body mb-8">
-                {t("home.wall_of_fame_desc")}
-              </p>
-              <Link to="/wall-of-fame">
-                <Button variant="secondary" className="w-full">
-                  {t("nav.wall_of_fame")}
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* How You Can Help Section */}
       <section
-        className="bg-secondary text-white py-12 overflow-hidden border-y border-border"
+        className="bg-white py-24 overflow-hidden"
         data-animation="help-section"
       >
         <div className="max-w-none mx-auto px-[5%]">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full -z-10"></div>
-            <img
-              src="https://res.cloudinary.com/daokrum7i/image/upload/f_auto,q_auto,w_800/v1767814233/humanity_how_can_i_help_xezom5.avif"
-              alt={IMAGE_ALTS.howCanIHelp}
-              data-animation="help-image"
-              className="rounded-2xl border border-white/20 w-full object-cover aspect-[3/2] shadow-2xl"
-              width="800"
-              height="533"
-              loading="lazy"
-              decoding="async"
-            />
-            <div className="relative lg:order-2"></div>
-            <div className="space-y-6 lg:order-1" data-animation="help-text">
-              <h2
-                key={i18n.language}
-                className="text-4xl md:text-5xl font-bold text-white"
-              >
-                {t("home.how_can_help_title")}
-              </h2>
-              <p className="text-lg text-white/90 leading-relaxed max-w-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div className="relative group" data-animation="help-image">
+              <img
+                src="https://res.cloudinary.com/daokrum7i/image/upload/f_auto,q_auto,w_800/v1767814233/humanity_how_can_i_help_xezom5.avif"
+                alt={IMAGE_ALTS.howCanIHelp}
+                className="rounded-[40px] w-full object-cover aspect-4/3 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] group-hover:scale-[1.02] transition-transform duration-700"
+                width="800"
+                height="600"
+                loading="lazy"
+                decoding="async"
+              />
+              {/* Decorative Accent */}
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-red-500/10 rounded-full blur-3xl -z-10" />
+            </div>
+
+            <div className="space-y-10" data-animation="help-text">
+              <div className="space-y-4">
+                <span className="text-red-500 text-[10px] uppercase tracking-[0.4em] font-black">
+                  Action Required
+                </span>
+                <h2 className="text-4xl md:text-6xl font-bold text-[#1a1a1a]" style={{ fontFamily: '"Syne", sans-serif' }}>
+                  How Can You <span className="text-[#E74C3C] italic">Help?</span>
+                </h2>
+              </div>
+              
+              <p className="text-lg md:text-xl text-gray-500 font-light leading-relaxed max-w-xl">
                 {t("home.how_can_help_desc")}
               </p>
-              <Link to="/volunteer">
-                <Button
-                  variant="white"
-                  className="!bg-white !text-secondary hover:!bg-primary hover:!text-white transition-all"
-                >
-                  {t("nav.stay_connected")}
-                </Button>
-              </Link>
+
+              <div className="pt-6">
+                <Link to="/volunteer">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="group relative px-12 py-5 bg-[#1a1a1a] text-white rounded-full transition-all duration-500 overflow-hidden shadow-2xl"
+                  >
+                    <span className="relative z-10 text-[13px] font-black uppercase tracking-[0.3em]">
+                      {t("volunteer.join_now")}
+                    </span>
+                    <div className="absolute inset-0 bg-[#E74C3C] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  </motion.button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Newsletter Section */}
+      {/* Join The Movement! (Newsletter) */}
       <section
-        className="py-20 bg-white border-t border-gray-100"
+        className="py-32 bg-[#fcf8f8] border-t border-black/5"
         data-animation="newsletter-section"
       >
         <div className="max-w-none mx-auto px-[5%] text-center">
-          <h2 className="text-3xl font-bold mb-4">
-            {t("home.join_the_movement")}
-          </h2>
-          <p className="text-gray-600 mb-8">{t("home.newsletter_desc")}</p>
-          <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+          <div className="mb-16 space-y-4">
+            <span className="text-indigo-500 text-[10px] uppercase tracking-[0.4em] font-black">
+              Newsletter
+            </span>
+            <h2 className="text-4xl md:text-6xl font-bold text-[#1a1a1a]" style={{ fontFamily: '"Syne", sans-serif' }}>
+              Join the <span className="text-[#4F46E5] italic">Movement!</span>
+            </h2>
+            <p className="max-w-xl mx-auto text-gray-500 text-lg md:text-xl font-light">
+              {t("home.newsletter_desc")}
+            </p>
+          </div>
+
+          <div className="relative max-w-xl mx-auto group">
             <input
               type="email"
               placeholder={t("home.email_placeholder")}
-              className="flex-1 px-6 py-3 rounded-md outline-none border focus:border-blood"
+              className="w-full px-10 py-6 rounded-full bg-white border border-black/5 outline-none focus:border-indigo-500/30 shadow-[0_10px_30px_rgba(0,0,0,0.02)] transition-all text-lg pr-44"
             />
-            <Button>{t("home.subscribe")}</Button>
+            <button className="absolute right-2 top-2 bottom-2 px-8 bg-[#4F46E5] text-white rounded-full font-black text-xs uppercase tracking-widest hover:bg-black transition-colors">
+              {t("home.subscribe")}
+            </button>
           </div>
+          
+          <p className="mt-8 text-[11px] uppercase tracking-[0.2em] font-bold text-black/20">
+            Secure • No Spam • Unsubscribe at any time
+          </p>
         </div>
       </section>
     </div>

@@ -1,21 +1,66 @@
 import React, { useState, useLayoutEffect, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FaGlobe, FaChevronDown, FaUserCircle } from "react-icons/fa";
+import {
+  FaChevronDown,
+  FaBars,
+  FaTimes,
+  FaUserAlt,
+  FaArrowRight,
+} from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 import { MdVerified } from "react-icons/md";
 import gsap from "gsap";
 import Button from "./Button";
 import hclogo from "../assets/humanitycallslogo.avif";
-import { SOCIAL_LINKS } from "../constants";
-import { animateNavBar, animateMobileMenuOpen } from "../utils/animations";
+import { animateNavBar } from "../utils/animations";
 import { useUser } from "../context/UserContext";
 import axios from "axios";
+
+const MenuButton = ({ isOpen, toggle }) => {
+  return (
+    <button
+      onClick={toggle}
+      className={`relative z-100 w-12 h-12 flex items-center justify-center rounded-full transition-all duration-500 ${isOpen ? 'bg-blood/5 shadow-inner' : 'bg-black/5 hover:bg-black/10'}`}
+    >
+      <div className="relative w-6 h-[14px] flex flex-col justify-between items-end">
+        <motion.span
+          className="h-0.5 rounded-full bg-current"
+          animate={{
+            width: isOpen ? "100%" : "100%",
+            rotate: isOpen ? 45 : 0,
+            y: isOpen ? 6 : 0,
+            backgroundColor: isOpen ? "#c53030" : "#1a1a1a"
+          }}
+          transition={{ duration: 0.4, ease: [0.76, 0, 0.24, 1] }}
+        />
+        <motion.span
+          className="h-0.5 rounded-full bg-current"
+          animate={{
+            width: isOpen ? "0%" : "70%",
+            opacity: isOpen ? 0 : 1,
+            backgroundColor: "#1a1a1a"
+          }}
+          transition={{ duration: 0.3 }}
+        />
+        <motion.span
+          className="h-0.5 rounded-full bg-current"
+          animate={{
+            width: isOpen ? "100%" : "40%",
+            rotate: isOpen ? -45 : 0,
+            y: isOpen ? -6 : 0,
+            backgroundColor: isOpen ? "#c53030" : "#1a1a1a"
+          }}
+          transition={{ duration: 0.4, ease: [0.76, 0, 0.24, 1] }}
+        />
+      </div>
+    </button>
+  );
+};
 
 const Navbar = () => {
   const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { pathname } = useLocation();
   const { user, logout } = useUser();
   const navigate = useNavigate();
@@ -55,158 +100,169 @@ const Navbar = () => {
 
   useLayoutEffect(() => {
     if (isOpen) {
-      const ctx = gsap.context(() => {
-        const mobileMenu = document.querySelector(
-          '[data-animation="mobile-menu"]',
-        );
-        if (mobileMenu) {
-          animateMobileMenuOpen(mobileMenu);
-        }
-      }, navRef);
       document.body.style.overflow = "hidden";
-      return () => {
-        ctx.revert();
-        document.body.style.overflow = "";
-      };
     } else {
       document.body.style.overflow = "";
     }
   }, [isOpen]);
 
-  const navLinks = [
-    { label: t("nav.about_us"), href: "/about" },
-    { label: t("nav.poor_needy"), href: "/poor-needy" },
-    { label: t("nav.animal_rescue"), href: "/animal-rescue" },
-    { label: t("nav.wall_of_fame"), href: "/wall-of-fame" },
-    { label: t("nav.volunteer"), href: "/volunteer" },
-  ];
-
-  const dropdownLinks = [
-    { label: t("nav.donations_made"), href: "/donations-made" },
-
+  const navigation = [
     {
-      label: t("nav.contact_us"),
-      href: "#contact",
-      onClick: (e) => {
-        e.preventDefault();
-        const contactSection = document.getElementById("contact");
-        if (contactSection) {
-          contactSection.scrollIntoView({ behavior: "smooth" });
-        }
-      },
+      title: "Who We Are?",
+      accent: "#6366f1", // Indigo
+      links: [
+        { label: "About Us", href: "/about" },
+        { label: "Gallery", href: "/gallery" },
+        { label: "Wall of Fame", href: "/wall-of-fame" },
+        { label: "Support FAQ", href: "/faq" },
+      ],
+    },
+    {
+      title: "Our Projects",
+      accent: "#10b981", // Emerald
+      isMega: true,
+      links: [
+        { label: "Blood Donation", href: "/request-donors" },
+        { label: "Animal Rescue", href: "/animal-rescue" },
+        { label: "Poor & Needy", href: "/poor-needy" },
+        { label: "CSR Activities", href: "/programs/csr_activities" },
+        { label: "Community Cleanup", href: "/programs/community_cleanup" },
+        { label: "Road Safety", href: "/programs/road_safety" },
+        { label: "Health & Hygiene", href: "/programs/health_hygiene" },
+        { label: "Youth Empowerment", href: "/programs/youth_empowerment" },
+        { label: "Impact Archive", href: "/donations-made" },
+      ],
+    },
+    {
+      title: "Get Involved",
+      accent: "#f59e0b", // Amber
+      links: [
+        { label: "Volunteer With Us", href: "/volunteer" },
+        { label: "Collaborate", href: "/collaborate" },
+        { label: "Become a Member", href: "/become-a-member" },
+      ],
+    },
+    {
+      title: "Resources",
+      accent: "#f43f5e", // Rose
+      links: [
+        { label: "Donate Now", href: "/donate" },
+        { label: "Find Donors", href: "/request-donors" },
+        {
+          label: "Contact Us",
+          href: "#contact",
+          onClick: (e) => {
+            if (e) e.preventDefault();
+            const contactSection = document.getElementById("contact");
+            if (contactSection) {
+              contactSection.scrollIntoView({ behavior: "smooth" });
+            }
+          },
+        },
+      ],
     },
   ];
-
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
 
   const isActive = (path) => pathname === path;
 
   return (
     <nav
-      className="sticky top-0 z-50 bg-bg border-b border-border shadow-sm"
+      className="sticky top-0 z-50 bg-white border-b border-black/5 shadow-sm"
       ref={navRef}
     >
       <div className="max-w-none mx-auto px-[5%]">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link
-            to="/"
-            className="flex items-center space-x-2 outline-none"
-            data-animation="logo"
-          >
+          <Link to="/" className="flex items-center space-x-3 outline-none">
             <img
               src={hclogo}
-              width="50"
-              height="50"
-              style={{ width: 50, height: 50, objectFit: "contain" }}
+              width="45"
+              height="45"
+              className="w-[45px] h-[45px] object-contain"
               alt="Humanity Calls logo"
             />
-            <span className="text-xl font-bold text-blood tracking-tight">
-              Humanity Calls
-            </span>
+            <div className="flex flex-col">
+              <span
+                className="text-lg font-black text-blood leading-none"
+                style={{ fontFamily: '"Poppins", sans-serif' }}
+              >
+                Humanity Calls
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center space-x-1">
-            <div className="flex items-center space-x-4 mr-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  data-animation="nav-link"
-                  className={`font-medium transition-colors text-sm px-3 py-2 focus:outline-none ${
-                    isActive(link.href)
-                      ? "text-primary border-b-4 border-primary"
-                      : "text-primary hover:text-secondary"
+          <div className="hidden lg:flex items-center h-full">
+            <div className="flex items-center h-full">
+              <Link to="/" className="relative px-5 py-2 group/nav">
+                <span
+                  className={`relative z-10 text-[13px] font-bold tracking-tight transition-colors duration-300 ${
+                    isActive("/")
+                      ? "text-blood"
+                      : "text-black/60 group-hover/nav:text-blood"
                   }`}
+                  style={{ fontFamily: '"Syne", sans-serif' }}
                 >
-                  {link.label}
-                </Link>
-              ))}
-
-              <div
-                className="relative"
-                onMouseEnter={() => setIsMoreOpen(true)}
-                onMouseLeave={() => setIsMoreOpen(false)}
-              >
-                <button
-                  className={`font-medium flex items-center text-sm px-3 py-2 rounded-md transition-colors focus:outline-none ${
-                    dropdownLinks.some((link) => isActive(link.href))
-                      ? "text-primary border-b-4 border-primary"
-                      : "text-primary hover:text-secondary"
-                  }`}
-                  data-animation="nav-link"
-                >
-                  {t("nav.more")}{" "}
-                  <FaChevronDown className="ml-1.5 text-[10px] opacity-50" />
-                </button>
-                {isMoreOpen && (
-                  <div className="absolute top-full left-0 w-48 bg-white shadow-xl border-t-4 border-primary py-2 animate-fade-in rounded-b-xl">
-                    {dropdownLinks.map((link) =>
-                      link.onClick ? (
-                        <button
-                          key={link.label}
-                          onClick={link.onClick}
-                          className="w-full text-left block px-4 py-3 text-sm text-text-body hover:bg-bg hover:text-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-                        >
-                          {link.label}
-                        </button>
-                      ) : (
-                        <Link
-                          key={link.label}
-                          to={link.href}
-                          className="block px-4 py-3 text-sm text-text-body hover:bg-bg hover:text-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-                        >
-                          {link.label}
-                        </Link>
-                      ),
-                    )}
-                  </div>
+                  Home
+                </span>
+                {isActive("/") && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    className="absolute inset-x-2 bottom-[-10px] h-1 bg-blood rounded-t-full"
+                  />
                 )}
-              </div>
+              </Link>
+
+              {navigation.map((group) => (
+                <DropdownNavItem
+                  key={group.title}
+                  title={group.title}
+                  links={group.links}
+                  isMega={group.isMega}
+                  accent={group.accent}
+                  isActive={group.links.some((l) => isActive(l.href))}
+                />
+              ))}
             </div>
 
-            <div className="flex items-center space-x-3 border-l pl-4 border-border">
+            <div className="flex items-center space-x-4 ml-6 pl-6 border-l border-black/5">
               {!user ? (
-                <>
-                  <Link to="/become-a-member">
-                    <Button
-                      variant="outline"
-                      className="text-[12px] py-2 px-3 min-h-[40px] font-semibold"
+                <Link to="/become-a-member">
+                  <motion.button
+                    initial="initial"
+                    whileHover="hover"
+                    whileTap={{ scale: 0.98 }}
+                    className="relative bg-[#1a1a1a] text-white text-[11px] font-black uppercase tracking-[0.1em] px-7 py-3 rounded-full shadow-lg border border-white/10 flex items-center gap-3 overflow-hidden transition-all group/login"
+                    style={{ fontFamily: '"Syne", sans-serif' }}
+                  >
+                    {/* Center-to-Edge Fill Layer */}
+                    <motion.div
+                      variants={{
+                        initial: { scaleX: 0, opacity: 0 },
+                        hover: { scaleX: 1, opacity: 1 },
+                      }}
+                      transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
+                      className="absolute inset-0 bg-purple-600 z-0 origin-center"
+                    />
+
+                    <span className="relative z-10">Login / Join</span>
+
+                    <motion.div
+                      variants={{
+                        initial: { x: 0 },
+                        hover: { x: -8 },
+                      }}
+                      transition={{ duration: 0.4, ease: [0.76, 0, 0.24, 1] }}
+                      className="relative z-10 text-[10px]"
                     >
-                      Login
-                    </Button>
-                  </Link>
-                </>
+                      <FaUserAlt />
+                    </motion.div>
+                  </motion.button>
+                </Link>
               ) : (
-                <div className="relative group">
-                  <Link
-                    to="/profile"
-                    className={`flex items-center justify-center w-10 h-10 rounded-full font-bold hover:bg-primary/90 transition-all shadow-md active:scale-95 relative ${volunteerStatus === "active" ? "bg-primary ring-2 ring-primary/20 ring-offset-2" : "bg-primary text-white"}`}
-                    title={user.name}
+                <Link to="/profile" className="group/profile relative">
+                  <div
+                    className={`relative flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all shadow-md group-hover:scale-105 active:scale-95 ring-1 ring-black/5 ${volunteerStatus === "active" ? "bg-primary" : "bg-primary text-white"}`}
                   >
                     {volunteerData?.profilePicture ? (
                       <img
@@ -215,161 +271,291 @@ const Navbar = () => {
                         className="w-full h-full object-cover rounded-full"
                       />
                     ) : (
-                      <span className="text-white">
+                      <span className="text-white text-base">
                         {user.name.charAt(0).toUpperCase()}
                       </span>
                     )}
                     {volunteerStatus === "active" && (
-                      <MdVerified className="absolute -right-1.5 -bottom-1 text-blue-600 bg-white rounded-full text-base" />
+                      <MdVerified className="absolute -right-0.5 -bottom-0.5 text-blue-600 bg-white rounded-full text-xs shadow-sm" />
                     )}
-                  </Link>
-                </div>
+                  </div>
+                </Link>
               )}
             </div>
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="lg:hidden flex items-center space-x-3">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-primary p-2 hover:bg-border/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-              aria-label={
-                isOpen ? "Close navigation menu" : "Open navigation menu"
-              }
-              aria-expanded={isOpen}
-            >
-              <svg
-                className="w-7 h-7"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                {isOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16m-7 6h7"
-                  />
-                )}
-              </svg>
-            </button>
+          <div className="lg:hidden flex items-center pr-2">
+            <MenuButton isOpen={isOpen} toggle={() => setIsOpen(!isOpen)} />
           </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <div
-          className="lg:hidden bg-bg border-t border-border animate-fade-in pb-12 shadow-2xl overflow-y-auto max-h-[calc(100vh-80px)]"
-          data-animation="mobile-menu"
-        >
-          <div className="px-4 pt-4 space-y-1">
-            {user && (
-              <Link
-                to="/profile"
-                onClick={() => setIsOpen(false)}
-                className={`px-4 py-4 rounded-xl border mb-4 flex items-center space-x-4 shadow-sm active:scale-[0.98] transition-all ${volunteerStatus === "active" ? "bg-gradient-to-r from-primary/5 to-white border-primary/20" : "bg-white border-border"}`}
-              >
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow-inner relative ${volunteerStatus === "active" ? "bg-primary text-white" : "bg-primary text-white"}`}
-                >
-                  {volunteerData?.profilePicture ? (
+      <AnimatePresence>
+        {isOpen && (
+          <div className="fixed inset-0 z-[60] bg-white overflow-hidden lg:hidden">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="h-dvh w-full flex flex-col overflow-y-auto"
+            >
+              <div className="flex flex-col min-h-full p-8 pb-32">
+                <div className="flex justify-between items-center mb-10 shrink-0">
+                  <Link
+                    to="/"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3"
+                  >
                     <img
-                      src={volunteerData.profilePicture}
-                      alt={user.name}
-                      className="w-full h-full object-cover rounded-full"
+                      src={hclogo}
+                      alt="Logo"
+                      className="h-10 w-10 object-contain"
                     />
-                  ) : (
-                    user.name.charAt(0).toUpperCase()
-                  )}
-                  {volunteerStatus === "active" && (
-                    <MdVerified className="absolute -right-1 -bottom-1 text-primary bg-white rounded-full text-lg" />
-                  )}
-                </div>
-                <div>
-                  <p className="font-bold text-text-body text-lg leading-tight flex items-center gap-1">
-                    {user.name}
-                    {volunteerStatus === "active" && (
-                      <MdVerified className="text-primary text-base" />
-                    )}
-                  </p>
-                  <p className="text-xs text-gray-500 font-medium">
-                    {volunteerStatus === "active"
-                      ? "Verified Volunteer"
-                      : "View Profile"}
-                  </p>
-                </div>
-              </Link>
-            )}
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                to={link.href}
-                className={`block px-4 py-4 text-lg font-medium border-b border-border rounded-lg transition-colors ${
-                  isActive(link.href)
-                    ? "text-primary bg-white"
-                    : "text-text-body hover:bg-white hover:text-secondary"
-                }`}
-                onClick={() => setIsOpen(false)}
-                data-animation="mobile-link"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="pt-6 px-4">
-              <p className="text-xs uppercase text-text-body/60 font-bold tracking-widest mb-4">
-                {t("nav.more_services")}
-              </p>
-              <div className="grid grid-cols-1 gap-1">
-                {dropdownLinks.map((link) =>
-                  link.onClick ? (
-                    <button
-                      key={link.label}
-                      onClick={(e) => {
-                        link.onClick(e);
-                        setIsOpen(false);
-                      }}
-                      className="block py-3 text-base font-medium text-text-body text-left hover:bg-white hover:text-secondary rounded-lg px-4 transition-colors"
+                    <span
+                      className="text-xl font-black tracking-tighter text-blood"
+                      style={{ fontFamily: '"Poppins", sans-serif' }}
                     >
-                      {link.label}
-                    </button>
+                      Humanity Calls
+                    </span>
+                  </Link>
+                </div>
+
+                <div className="flex flex-col">
+                  <Link
+                    to="/"
+                    className={`text-4xl font-black uppercase tracking-tighter py-6 border-b border-black/5 ${isActive("/") ? "text-blood" : "text-black/10"}`}
+                    onClick={() => setIsOpen(false)}
+                    style={{ fontFamily: '"Syne", sans-serif' }}
+                  >
+                    Home
+                  </Link>
+
+                  {navigation.map((group) => (
+                    <MobileNavItem
+                      key={group.title}
+                      group={group}
+                      closeMenu={() => setIsOpen(false)}
+                      pathname={pathname}
+                    />
+                  ))}
+                </div>
+
+                <div className="mt-auto pt-10 grid grid-cols-2 gap-3 shrink-0">
+                  {!user ? (
+                    <>
+                      <Link
+                        to="/become-a-member?mode=login"
+                        onClick={() => setIsOpen(false)}
+                        className="block"
+                      >
+                        <button 
+                          className="w-full py-4 text-[10px] font-black tracking-widest uppercase rounded-2xl border border-black/10 bg-white text-black hover:bg-black/5 transition-all"
+                          style={{ fontFamily: '"Syne", sans-serif' }}
+                        >
+                          Login
+                        </button>
+                      </Link>
+                      <Link
+                        to="/become-a-member?mode=signup"
+                        onClick={() => setIsOpen(false)}
+                        className="block"
+                      >
+                        <button 
+                          className="w-full py-4 text-[10px] font-black tracking-widest uppercase rounded-2xl bg-black text-white shadow-lg shadow-black/10 hover:bg-black/90 transition-all"
+                          style={{ fontFamily: '"Syne", sans-serif' }}
+                        >
+                          Sign Up
+                        </button>
+                      </Link>
+                    </>
                   ) : (
                     <Link
-                      key={link.label}
-                      to={link.href}
-                      className="block py-3 text-base font-medium text-text-body hover:bg-white hover:text-secondary rounded-lg px-4 transition-colors"
+                      to="/profile"
                       onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-4 p-4 bg-black/[0.03] rounded-2xl"
                     >
-                      {link.label}
+                      <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center font-bold text-white shadow-md overflow-hidden shrink-0">
+                        {volunteerData?.profilePicture ? (
+                          <img
+                            src={volunteerData.profilePicture}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          user.name.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-black tracking-tight">{user.name}</p>
+                        <p className="text-[10px] font-bold text-black/30 uppercase">
+                          Verified Volunteer
+                        </p>
+                      </div>
                     </Link>
-                  ),
-                )}
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </nav>
+  );
+};
+
+const DropdownNavItem = ({ title, links, isActive, isMega, accent }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div
+      className="relative h-full flex items-center group/nav"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <button
+        className={`flex items-center gap-1.5 px-5 py-2 text-[13px] font-bold tracking-tight transition-all duration-300 ${
+          isActive ? "text-blood" : "text-black/60 group-hover/nav:text-blood"
+        }`}
+        style={{
+          fontFamily: '"Syne", sans-serif',
+          color: isOpen ? accent : "",
+        }}
+      >
+        {title}
+        <FaChevronDown
+          className={`text-[9px] transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+        />
+        {isActive && (
+          <motion.span
+            layoutId="nav-pill"
+            className="absolute inset-x-2 bottom-[-10px] h-1 bg-blood rounded-t-full"
+          />
+        )}
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -10, x: "-50%" }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className={`absolute top-full left-1/2 z-[100] ${isMega ? "w-[500px]" : "w-64"}`}
+          >
+            <div className="bg-white shadow-[0_20px_40px_rgba(0,0,0,0.12)] border-x border-b border-black/5 rounded-b-[2rem] overflow-hidden">
+              <div
+                className="h-[3px] w-full"
+                style={{ backgroundColor: accent }}
+              />
+              <div
+                className={`p-4 grid gap-1 ${isMega ? "grid-cols-2" : "grid-cols-1"}`}
+              >
+                {links.map((link) => (
+                  <div key={link.label}>
+                    {link.onClick ? (
+                      <button
+                        onClick={(e) => {
+                          link.onClick(e);
+                          setIsOpen(false);
+                        }}
+                        className="group/item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/[0.02] transition-all"
+                      >
+                        <div
+                          className="w-1.5 h-1.5 rounded-full scale-0 group-hover/item:scale-100 transition-transform"
+                          style={{ backgroundColor: accent }}
+                        />
+                        <span
+                          className="text-[13px] font-bold whitespace-nowrap text-black/50 group-hover/item:text-black transition-colors"
+                          style={{ fontFamily: '"Poppins", sans-serif' }}
+                        >
+                          {link.label}
+                        </span>
+                      </button>
+                    ) : (
+                      <Link
+                        to={link.href}
+                        onClick={() => setIsOpen(false)}
+                        className="group/item flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/[0.02] transition-all"
+                      >
+                        <div
+                          className="w-1.5 h-1.5 rounded-full scale-0 group-hover/item:scale-100 transition-transform"
+                          style={{ backgroundColor: accent }}
+                        />
+                        <span
+                          className="text-[13px] font-bold whitespace-nowrap text-black/50 group-hover/item:text-black transition-colors"
+                          style={{ fontFamily: '"Poppins", sans-serif' }}
+                        >
+                          {link.label}
+                        </span>
+                      </Link>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="flex flex-col space-y-3 pt-10 px-4">
-              {!user && (
-                <Link to="/become-a-member" onClick={() => setIsOpen(false)}>
-                  <Button
-                    variant="outline"
-                    className="w-full py-4 text-base font-bold"
-                  >
-                    Become a Member
-                  </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const MobileNavItem = ({ group, closeMenu, pathname }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const isGroupActive = group.links.some((l) => l.href === pathname);
+
+  return (
+    <div className="flex flex-col">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-between py-6 text-4xl font-black uppercase tracking-tighter border-b border-black/5 text-left transition-colors ${
+          isOpen || isGroupActive ? "" : "text-black/10"
+        }`}
+        style={{
+          fontFamily: '"Syne", sans-serif',
+          color: isOpen ? group.accent : isGroupActive ? group.accent : "",
+        }}
+      >
+        {group.title}
+        <FaChevronDown
+          className={`text-xl transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden bg-black/[0.01]"
+          >
+            <div className="flex flex-col gap-4 p-6">
+              {group.links.map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  onClick={() => {
+                    if (link.onClick) link.onClick();
+                    closeMenu();
+                  }}
+                  className={`text-xl font-bold tracking-tight hover:opacity-80 ${
+                    pathname === link.href ? "opacity-100" : "opacity-30"
+                  }`}
+                  style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    color: pathname === link.href ? group.accent : "",
+                  }}
+                >
+                  {link.label}
                 </Link>
-              )}
+              ))}
             </div>
-          </div>
-        </div>
-      )}
-    </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
