@@ -145,7 +145,8 @@ const VolunteersManager = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl border border-border p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h2 className="text-3xl font-bold text-primary flex items-center gap-3">
           <FaUserFriends /> Volunteers
@@ -444,6 +445,7 @@ const VolunteersManager = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

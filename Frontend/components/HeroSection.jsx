@@ -218,11 +218,11 @@ const HeroSection = () => {
 
       {/* ── Main Content ── */}
       <motion.div
-        className="relative z-10 w-full max-w-[1440px] mx-auto px-6 sm:px-8 md:px-[8%] lg:px-[10%] py-20 md:py-28 lg:py-32"
+        className="relative z-10 w-full max-w-[1440px] mx-auto px-6 sm:px-8 md:px-[8%] lg:px-[10%] py-12 md:py-28 lg:py-32"
         style={{ y: textY }}
       >
         <motion.div
-          className="max-w-3xl space-y-8 md:space-y-10"
+          className="max-w-3xl space-y-6 md:space-y-10"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -251,12 +251,12 @@ const HeroSection = () => {
           >
             {/* Line 1: "FEED YOUR" — Syne bold uppercase */}
             <span
-              className="text-[clamp(2rem,6vw,4.5rem)] text-white/90 mb-1"
+              className="text-[clamp(1.75rem,5vw,4.5rem)] text-white/90 mb-1"
               style={{
                 fontFamily: '"Syne", sans-serif',
                 fontWeight: 800,
                 textTransform: "uppercase",
-                letterSpacing: "-0.02em",
+                letterSpacing: "-0.01em",
               }}
             >
               {t("home.hero_title_help")}
@@ -265,11 +265,11 @@ const HeroSection = () => {
             {/* Line 2: "Humanity" — Syne Bold with animated flowing gradient */}
             <span className="relative inline-block">
               <span
-                className="hero-gradient-text text-[clamp(3rem,9vw,7rem)] relative z-10"
+                className="hero-gradient-text text-[clamp(2.25rem,8.5vw,7rem)] relative z-10"
                 style={{
                   fontFamily: '"Syne", sans-serif',
                   fontWeight: 800,
-                  lineHeight: 1,
+                  lineHeight: 1.1,
                   textTransform: "uppercase",
                 }}
               >

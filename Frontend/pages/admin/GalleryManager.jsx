@@ -216,7 +216,7 @@ const GalleryManager = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl border border-border overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Tabs Header */}
       <div className="flex border-b border-border bg-gray-50/50">
         <button

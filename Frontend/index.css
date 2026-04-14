@@ -59,6 +59,13 @@ html.lenis body {
   --color-gray-200: #E8E8E8;
   --color-gray-500: #4A4A4A;
 
+  /* ── Admin / App Semantic Colors ── */
+  --color-primary:   #4F46E5;   /* Indigo 600 */
+  --color-blood:     #C62828;   /* Deep red */
+  --color-border:    #E2E8F0;   /* Slate 200 */
+  --color-bg:        #F8FAFC;   /* Slate 50 */
+  --color-text-body: #1E293B;   /* Slate 800 */
+
   /* ── Additional SVG / Inline Colors ── */
   --color-red-svg:       #FF6D6D;
   --color-red-light-svg: #FF7171;

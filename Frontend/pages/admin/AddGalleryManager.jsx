@@ -146,7 +146,7 @@ const AddGalleryManager = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl border border-border p-8 md:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <h2 className="text-3xl font-bold text-primary mb-8 flex items-center gap-3">
         <FaPlusCircle /> Add Image to Gallery
       </h2>

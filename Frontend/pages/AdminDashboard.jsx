@@ -6,20 +6,27 @@ import {
   FaSignOutAlt,
   FaUserFriends,
   FaClipboardList,
-  FaChevronLeft,
-  FaChevronRight,
   FaEnvelope,
   FaImages,
-  FaPlusCircle
+  FaPlusCircle,
+  FaShieldAlt,
 } from "react-icons/fa";
 import hclogo from "../assets/humanitycallslogo.avif";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+/* ── Per-nav-item color config ─────────────────────────────── */
+const NAV_COLORS = {
+  volunteers:  { bg: "bg-indigo-500",   text: "text-indigo-500",   light: "bg-indigo-50",   ring: "ring-indigo-200"  },
+  "send-mails":{ bg: "bg-violet-500",   text: "text-violet-500",   light: "bg-violet-50",   ring: "ring-violet-200"  },
+  requests:    { bg: "bg-amber-500",    text: "text-amber-500",    light: "bg-amber-50",    ring: "ring-amber-200"   },
+  gallery:     { bg: "bg-teal-500",     text: "text-teal-500",     light: "bg-teal-50",     ring: "ring-teal-200"    },
+  "add-gallery":{ bg: "bg-pink-500",   text: "text-pink-500",     light: "bg-pink-50",     ring: "ring-pink-200"    },
+};
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
@@ -37,9 +44,7 @@ const AdminDashboard = () => {
       const token = sessionStorage.getItem("adminToken");
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/volunteers?status=pending`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setPendingRequestsCount(response.data.length);
     } catch (err) {
@@ -54,129 +59,158 @@ const AdminDashboard = () => {
   };
 
   const menuItems = [
-    { id: "volunteers", label: "Volunteers", icon: <FaUserFriends /> },
-    { id: "send-mails", label: "Send Mails", icon: <FaEnvelope /> },
-    { id: "requests", label: "Volunteer Requests", icon: <FaClipboardList /> },
-    { id: "gallery", label: "Gallery", icon: <FaImages /> },
-    { id: "add-gallery", label: "Add Gallery", icon: <FaPlusCircle /> },
+    { id: "volunteers",   label: "Volunteers",       icon: <FaUserFriends />  },
+    { id: "send-mails",   label: "Send Mails",        icon: <FaEnvelope />     },
+    { id: "requests",     label: "Requests",          icon: <FaClipboardList />, badge: pendingRequestsCount },
+    { id: "gallery",      label: "Gallery",           icon: <FaImages />       },
+    { id: "add-gallery",  label: "Add Gallery",       icon: <FaPlusCircle />   },
   ];
 
   return (
-    <div className="h-screen bg-bg flex flex-col overflow-hidden">
-      {/* Navbar */}
-      <nav className="bg-white border-b border-border px-[5%] py-4 flex items-center justify-between z-50 shadow-sm shrink-0">
-        <div className="flex items-center gap-6">
+    <div className="min-h-screen bg-[#F0F2F8] flex flex-col">
+
+      {/* ── Top Navbar ──────────────────────────────────────────── */}
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-100 shadow-sm px-4 md:px-8 py-3 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          {/* Mobile hamburger */}
           <button
-            className="lg:hidden text-primary p-2 hover:bg-bg rounded-lg transition-colors"
+            className="lg:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors"
             onClick={() => setIsMobileSidebarOpen(true)}
+            aria-label="Open menu"
           >
-            <FaBars size={24} />
+            <FaBars size={20} />
           </button>
-          <div className="flex items-center gap-4">
-            <img
-              src={hclogo}
-              width="50"
-              height="50"
-              className="object-contain"
-              alt="Humanity Calls logo"
-            />
-            <span className="text-2xl font-black text-blood tracking-tighter hidden sm:block">
-              Humanity Calls
-            </span>
+
+          {/* Brand */}
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl overflow-hidden shadow-sm">
+              <img src={hclogo} alt="HC" className="w-full h-full object-contain" />
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-sm font-black text-slate-800 leading-none tracking-tight">Humanity Calls</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Admin Console</p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden md:block text-sm font-bold text-text-body/60 uppercase tracking-widest">
-            Admin Portal
-          </span>
+
+        {/* Right side */}
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Online</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100">
+            <FaShieldAlt size={11} className="text-slate-500" />
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Admin</span>
+          </div>
         </div>
       </nav>
 
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Mobile Sidebar Overlay */}
+      {/* ── Body: Sidebar + Main ─────────────────────────────────── */}
+      <div className="flex flex-1 relative">
+
+        {/* Mobile overlay */}
         {isMobileSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
             onClick={() => setIsMobileSidebarOpen(false)}
           />
         )}
 
-        {/* Collapsible Sidebar */}
+        {/* ── Sidebar ─────────────────────────────────────────────── */}
         <aside
           className={`
-          fixed lg:relative inset-y-0 left-0 bg-white border-r border-border z-[100] transform transition-all duration-300 ease-in-out shrink-0 flex flex-col
-          ${isSidebarOpen ? "w-64" : "w-20"}
-          ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        `}
+            fixed top-0 left-0 h-full w-72 bg-[#1E1F2E] z-[100] transform transition-transform duration-300 ease-in-out
+            flex flex-col shadow-2xl
+            ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:shrink-0
+          `}
         >
-          <div className="p-6 flex justify-between items-center border-b border-border shrink-0">
-            {isSidebarOpen && (
-              <span className="font-bold text-primary">Admin Menu</span>
-            )}
+          {/* Sidebar Header */}
+          <div className="px-6 py-6 flex items-center justify-between border-b border-white/5">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                <FaShieldAlt size={14} className="text-white/80" />
+              </div>
+              <div>
+                <p className="text-[13px] font-black text-white leading-none tracking-tight">Admin Panel</p>
+                <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest mt-0.5">Management</p>
+              </div>
+            </div>
             <button
-              className="p-2 hover:bg-bg rounded-lg transition-colors text-primary hidden lg:block"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            >
-              {isSidebarOpen ? <FaChevronLeft /> : <FaChevronRight />}
-            </button>
-            <button
-              className="lg:hidden text-primary"
+              className="lg:hidden p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
               onClick={() => setIsMobileSidebarOpen(false)}
             >
-              <FaTimes size={20} />
+              <FaTimes size={16} />
             </button>
           </div>
 
-          <nav className="p-4 space-y-2 flex-grow overflow-y-auto overflow-x-hidden">
-            {menuItems.map((item) => (
-              <NavLink
-                key={item.id}
-                to={`/admin/${item.id}`}
-                onClick={() => setIsMobileSidebarOpen(false)}
-                className={({ isActive }) => `
-                  w-full flex items-center gap-4 px-4 py-4 rounded-xl font-bold transition-all
-                  ${isActive ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-text-body/60 hover:bg-bg hover:text-primary"}
-                  ${!isSidebarOpen && "justify-center"}
-                `}
-                title={item.label}
-              >
-                <span className="text-xl">{item.icon}</span>
-                {isSidebarOpen && (
-                  <div className="flex items-center justify-between w-full">
-                    <span className="whitespace-nowrap">{item.label}</span>
-                    {item.id === "requests" && pendingRequestsCount > 0 && (
-                      <span className="bg-green-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full ml-2 shadow-sm">
-                        {pendingRequestsCount}
+          {/* Nav Links */}
+          <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] px-3 mb-3">Navigation</p>
+            {menuItems.map((item) => {
+              const colors = NAV_COLORS[item.id] || {};
+              return (
+                <NavLink
+                  key={item.id}
+                  to={`/admin/${item.id}`}
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                  title={item.label}
+                  className={({ isActive }) =>
+                    `group relative flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200
+                    ${isActive
+                      ? `${colors.light} ${colors.text} shadow-sm ring-1 ${colors.ring}`
+                      : "text-white/50 hover:text-white hover:bg-white/8"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <span
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 transition-all
+                        ${isActive ? `${colors.bg} text-white shadow-lg` : "bg-white/8 text-white/50 group-hover:bg-white/15 group-hover:text-white"}`}
+                      >
+                        {item.icon}
                       </span>
-                    )}
-                  </div>
-                )}
-              </NavLink>
-            ))}
+                      <span className="text-sm whitespace-nowrap flex-1">{item.label}</span>
+                      {item.badge > 0 && (
+                        <span className="bg-amber-400 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-full min-w-[20px] text-center shadow-sm">
+                          {item.badge}
+                        </span>
+                      )}
+                      {isActive && (
+                        <span className={`absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-l-full ${colors.bg}`} />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
           </nav>
 
-          <div className="p-4 border-t border-border">
+          {/* Logout */}
+          <div className="p-4 border-t border-white/5">
             <button
               onClick={handleLogout}
-              className={`
-                w-full flex items-center gap-4 px-4 py-4 rounded-xl font-bold text-blood hover:bg-blood/5 transition-all
-                ${!isSidebarOpen && "justify-center"}
-              `}
-              title="Logout"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 font-semibold text-sm transition-all duration-200 group"
             >
-              <FaSignOutAlt className="text-xl" />
-              {isSidebarOpen && <span>Logout</span>}
+              <span className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0 group-hover:bg-red-500/20 transition-colors">
+                <FaSignOutAlt size={14} />
+              </span>
+              <span>Sign Out</span>
             </button>
           </div>
         </aside>
 
-        <main className="flex-1 overflow-y-auto bg-[#F8FAFC] flex flex-col">
-          <div className="p-6 md:p-10 lg:p-12 flex-grow">
-            <div className="max-w-6xl mx-auto w-full">
+        {/* ── Main Content ─────────────────────────────────────────── */}
+        <main className="flex-1 min-w-0 overflow-y-auto">
+          <div className="p-4 md:p-6 lg:p-8 min-h-full">
+            <div className="max-w-7xl mx-auto w-full">
               <Outlet context={{ onStatusUpdate: fetchPendingCount }} />
             </div>
           </div>
         </main>
+
       </div>
     </div>
   );
