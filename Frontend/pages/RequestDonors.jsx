@@ -6,7 +6,11 @@ import SEO from "../components/SEO";
 import Button from "../components/Button";
 import { IMAGE_ALTS } from "../constants";
 import { sendEmail } from "../utils/email";
+import { uploadPublicImage } from "../utils/publicForms";
+import { fetchFormAssets } from "../utils/formAssets";
+import { getCurrentLocationLabel } from "../utils/location";
 import withFormAuth from "../components/withFormAuth";
+import { toast } from "react-toastify";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,6 +24,11 @@ const RequestDonors = ({
   const { t, i18n } = useTranslation();
   const containerRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [heroImage, setHeroImage] = useState(
+    "https://res.cloudinary.com/daokrum7i/image/upload/v1767814234/request_for_donors_digyme.avif",
+  );
 
   useLayoutEffect(() => {
     const isMobile = window.innerWidth < 768;
@@ -81,6 +90,8 @@ const RequestDonors = ({
         bloodGroup: "",
         bloodRequestType: "",
         hospitalAddressWithPincode: "",
+        locationAddress: "",
+        requestImageUrl: "",
       }
     );
   });
@@ -90,6 +101,21 @@ const RequestDonors = ({
       setFormData(prev => ({ ...prev, verifiedPersonName: user.name, email: user.email }));
     }
   }, [user]);
+
+  useEffect(() => {
+    fetchFormAssets()
+      .then((assets) => setHeroImage(assets.donation_request_hero || heroImage))
+      .catch(() => null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (formData.locationAddress) return;
+    getCurrentLocationLabel()
+      .then((label) => setFormData((prev) => ({ ...prev, locationAddress: prev.locationAddress || label })))
+      .catch(() => null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -112,6 +138,8 @@ const RequestDonors = ({
         bloodGroup: "",
         bloodRequestType: "",
         hospitalAddressWithPincode: "",
+        locationAddress: "",
+        requestImageUrl: "",
       });
     }
     setLoading(false);
@@ -119,6 +147,34 @@ const RequestDonors = ({
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleAutoLocation = async () => {
+    setLocating(true);
+    try {
+      const label = await getCurrentLocationLabel();
+      setFormData((prev) => ({ ...prev, locationAddress: label }));
+    } catch (_error) {
+      toast.error("Unable to fetch location. Please enter manually.");
+    } finally {
+      setLocating(false);
+    }
+  };
+
+  const handleRequestImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const imageUrl = await uploadPublicImage(file);
+      setFormData((prev) => ({ ...prev, requestImageUrl: imageUrl || "" }));
+      toast.success("Image uploaded");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Image upload failed");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   return (
@@ -130,7 +186,7 @@ const RequestDonors = ({
 
       <div className="w-full relative h-[400px] md:h-[600px] mb-12">
         <img
-          src="https://res.cloudinary.com/daokrum7i/image/upload/v1767814234/request_for_donors_digyme.avif"
+          src={heroImage}
           alt={IMAGE_ALTS.bloodDonation}
           className="w-full h-full object-cover"
         />
@@ -290,6 +346,39 @@ const RequestDonors = ({
                 placeholder={t("request_donors.hospital_address_placeholder")}
                 className="w-full px-4 py-4 bg-white border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-text-body shadow-sm"
               ></textarea>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <label className="text-xs font-bold text-blood-dark uppercase tracking-widest">
+                  Current Location
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAutoLocation}
+                  className="text-[10px] px-3 py-1 rounded-lg border border-primary text-primary font-bold"
+                >
+                  {locating ? "Locating..." : "Use my location"}
+                </button>
+              </div>
+              <textarea
+                required
+                rows={2}
+                name="locationAddress"
+                value={formData.locationAddress}
+                onChange={handleChange}
+                placeholder="Current area/address"
+                className="w-full px-4 py-4 bg-white border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-text-body shadow-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-blood-dark uppercase tracking-widest">
+                Attach supporting image (optional)
+              </label>
+              <input type="file" accept="image/*" onChange={handleRequestImage} className="w-full text-sm" />
+              {uploading && <p className="text-xs text-text-body/60">Uploading image...</p>}
+              {formData.requestImageUrl && (
+                <img src={formData.requestImageUrl} alt="Request support" className="max-h-40 rounded-lg border border-border mt-2" />
+              )}
             </div>
 
             {renderSubmitButton(

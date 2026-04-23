@@ -10,6 +10,7 @@ import {
   FaImages,
   FaPlusCircle,
   FaShieldAlt,
+  FaImage,
 } from "react-icons/fa";
 import hclogo from "../assets/humanitycallslogo.avif";
 import axios from "axios";
@@ -20,6 +21,7 @@ const NAV_COLORS = {
   volunteers:  { bg: "bg-indigo-500",   text: "text-indigo-500",   light: "bg-indigo-50",   ring: "ring-indigo-200"  },
   "send-mails":{ bg: "bg-violet-500",   text: "text-violet-500",   light: "bg-violet-50",   ring: "ring-violet-200"  },
   requests:    { bg: "bg-amber-500",    text: "text-amber-500",    light: "bg-amber-50",    ring: "ring-amber-200"   },
+  "form-images":{ bg: "bg-blue-500",    text: "text-blue-500",     light: "bg-blue-50",      ring: "ring-blue-200"    },
   gallery:     { bg: "bg-teal-500",     text: "text-teal-500",     light: "bg-teal-50",     ring: "ring-teal-200"    },
   "add-gallery":{ bg: "bg-pink-500",   text: "text-pink-500",     light: "bg-pink-50",     ring: "ring-pink-200"    },
 };
@@ -62,6 +64,7 @@ const AdminDashboard = () => {
     { id: "volunteers",   label: "Volunteers",       icon: <FaUserFriends />  },
     { id: "send-mails",   label: "Send Mails",        icon: <FaEnvelope />     },
     { id: "requests",     label: "Requests",          icon: <FaClipboardList />, badge: pendingRequestsCount },
+    { id: "form-images",  label: "Form Images",       icon: <FaImage />        },
     { id: "gallery",      label: "Gallery",           icon: <FaImages />       },
     { id: "add-gallery",  label: "Add Gallery",       icon: <FaPlusCircle />   },
   ];

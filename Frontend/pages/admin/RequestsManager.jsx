@@ -228,6 +228,11 @@ const RequestsManager = () => {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-xs font-bold">BG: <span className="text-blood">{vol.bloodGroup}</span></div>
+                      {vol.locationAddress && (
+                        <div className="text-[10px] text-text-body/50 mt-1 max-w-[180px] truncate" title={vol.locationAddress}>
+                          {vol.locationAddress}
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <button
@@ -356,6 +361,28 @@ const RequestsManager = () => {
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Motivation/Interest</label>
                 <textarea rows="2" value={volunteerToEdit.interest} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, interest: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none resize-none" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Location</label>
+                <textarea rows="2" value={volunteerToEdit.locationAddress || ""} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, locationAddress: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none resize-none" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Donation Support</label>
+                <input
+                  type="text"
+                  value={(volunteerToEdit.deviceDonationChoices || []).join(", ")}
+                  onChange={(e) =>
+                    setVolunteerToEdit({
+                      ...volunteerToEdit,
+                      deviceDonationChoices: e.target.value
+                        .split(",")
+                        .map((item) => item.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                  placeholder="T-Shirts, Gadgets, Laptops, Phones"
+                  className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none"
+                />
               </div>
               <div className="flex gap-4 pt-4 sticky bottom-0 bg-white">
                 <button type="button" onClick={() => setShowVolunteerEditModal(false)} className="flex-1 py-4 border border-border rounded-2xl font-bold hover:bg-bg transition-all text-sm">Cancel</button>
