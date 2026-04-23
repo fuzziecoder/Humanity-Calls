@@ -6,7 +6,11 @@ import { MdAccountBalanceWallet } from "react-icons/md";
 import SEO from "../components/SEO";
 import Button from "../components/Button";
 import { sendEmail } from "../utils/email";
+import { uploadPublicImage } from "../utils/publicForms";
+import { fetchFormAssets } from "../utils/formAssets";
+import { getCurrentLocationLabel } from "../utils/location";
 import withFormAuth from "../components/withFormAuth";
+import { toast } from "react-toastify";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,6 +24,11 @@ const Donate = ({
   const { t, i18n } = useTranslation();
   const containerRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [heroImage, setHeroImage] = useState(
+    "https://res.cloudinary.com/daokrum7i/image/upload/f_auto,q_auto,w_900/v1767814232/hc_blood_donation_mfwveo.png",
+  );
 
   useLayoutEffect(() => {
     const isMobile = window.innerWidth < 768;
@@ -79,6 +88,8 @@ const Donate = ({
         phone: "",
         amount: "",
         transactionId: "",
+        locationAddress: "",
+        donationImageUrl: "",
       }
     );
   });
@@ -88,6 +99,21 @@ const Donate = ({
       setFormData((prev) => ({ ...prev, name: user.name, email: user.email }));
     }
   }, [user]);
+
+  useEffect(() => {
+    fetchFormAssets()
+      .then((assets) => setHeroImage(assets.donate_page_hero || heroImage))
+      .catch(() => null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (formData.locationAddress) return;
+    getCurrentLocationLabel()
+      .then((label) => setFormData((prev) => ({ ...prev, locationAddress: prev.locationAddress || label })))
+      .catch(() => null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -112,9 +138,39 @@ const Donate = ({
         phone: "",
         amount: "",
         transactionId: "",
+        locationAddress: "",
+        donationImageUrl: "",
       });
     }
     setLoading(false);
+  };
+
+  const handleAutoLocation = async () => {
+    setLocating(true);
+    try {
+      const label = await getCurrentLocationLabel();
+      setFormData((prev) => ({ ...prev, locationAddress: label }));
+    } catch (_error) {
+      toast.error("Unable to fetch location. Please enter manually.");
+    } finally {
+      setLocating(false);
+    }
+  };
+
+  const handleDonationImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const imageUrl = await uploadPublicImage(file);
+      setFormData((prev) => ({ ...prev, donationImageUrl: imageUrl || "" }));
+      toast.success("Image uploaded");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Image upload failed");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   return (
@@ -140,7 +196,7 @@ const Donate = ({
               <div className="relative inline-block group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blood rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
                 <img
-                  src="https://res.cloudinary.com/daokrum7i/image/upload/v1768833314/hc_donation_qr_syuyxj.jpg"
+                  src={heroImage}
                   alt="Donation QR Code"
                   className="relative rounded-xl border-4 border-white shadow-2xl w-64 h-64 mx-auto object-contain"
                 />
@@ -236,6 +292,29 @@ const Donate = ({
                 />
               </div>
             </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Current location
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAutoLocation}
+                  className="text-xs px-3 py-1.5 border border-primary text-primary rounded-lg font-bold"
+                >
+                  {locating ? "Locating..." : "Use my location"}
+                </button>
+              </div>
+              <textarea
+                required
+                rows={2}
+                name="locationAddress"
+                value={formData.locationAddress}
+                onChange={handleChange}
+                placeholder="Your current area/address"
+                className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -264,6 +343,25 @@ const Donate = ({
                   className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">
+                Payment screenshot (optional)
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleDonationImage}
+                className="w-full text-sm"
+              />
+              {uploading && <p className="text-xs text-gray-500">Uploading image...</p>}
+              {formData.donationImageUrl && (
+                <img
+                  src={formData.donationImageUrl}
+                  alt="Payment proof"
+                  className="mt-2 max-h-40 rounded-lg border border-border"
+                />
+              )}
             </div>
             {renderSubmitButton(
               <Button

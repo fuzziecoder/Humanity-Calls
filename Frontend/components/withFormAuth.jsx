@@ -3,7 +3,8 @@ import { useUser } from "../context/UserContext";
 import { Link, useLocation } from "react-router-dom";
 import Button from "./Button";
 
-const withFormAuth = (WrappedComponent) => {
+const withFormAuth = (WrappedComponent, options = {}) => {
+  const { allowGuestSubmit = false } = options;
   return (props) => {
     const { user } = useUser();
     const location = useLocation();
@@ -52,6 +53,9 @@ const withFormAuth = (WrappedComponent) => {
     };
 
     const renderSubmitButton = (originalButton, currentFormData) => {
+      if (!user && allowGuestSubmit) {
+        return originalButton;
+      }
       if (!user) {
         return (
           <Link 

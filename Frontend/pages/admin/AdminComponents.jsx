@@ -96,6 +96,7 @@ export const ViewMoreModal = ({ isOpen, onClose, vol }) => {
                 <h4 className="text-xs font-black text-primary uppercase tracking-widest border-b border-primary/10 pb-2">Experience & Skills</h4>
                 <DetailItem label="Current Occupation" value={vol.occupation === 'Other' ? vol.occupationDetail : vol.occupation} />
                 <DetailItem label="Professional Skills" value={vol.skills} />
+                <DetailItem label="Location" value={vol.locationAddress} />
               </div>
               <div className="p-6 bg-bg/50 rounded-3xl space-y-4">
                 <h4 className="text-xs font-black text-primary uppercase tracking-widest border-b border-primary/10 pb-2">Verification Information</h4>
@@ -113,6 +114,9 @@ export const ViewMoreModal = ({ isOpen, onClose, vol }) => {
               <div className="p-6 bg-primary/5 rounded-3xl border border-primary/10">
                 <h4 className="text-xs font-black text-primary uppercase tracking-widest mb-3">Motivation / Interest</h4>
                 <p className="text-sm font-bold text-text-body italic">"{vol.interest}"</p>
+                <div className="mt-4">
+                  <DetailList label="Donation Support" items={vol.deviceDonationChoices} />
+                </div>
               </div>
             </div>
           </div>

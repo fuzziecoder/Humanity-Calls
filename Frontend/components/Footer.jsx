@@ -71,6 +71,7 @@ const Footer = () => {
             <ul className="flex flex-col gap-5">
               {[
                 { to: "/donate", label: "Donate Now" },
+                { to: "/blood-donation", label: "Blood Donation Form" },
                 { to: "/request-donors", label: "Find Donors" },
                 { to: "/contact", label: "Get In Touch" },
                 { to: "/faq", label: "Support FAQ" },

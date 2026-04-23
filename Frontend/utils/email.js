@@ -3,10 +3,17 @@ import { toast } from "react-toastify";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 export const sendEmail = async (type, data, subject) => {
-  // Client-side validation for empty fields
-  const isEmpty = Object.values(data).some(
-    (value) => !value || value.toString().trim() === ""
-  );
+  const optionalKeys = new Set([
+    "locationAddress",
+    "donationImageUrl",
+    "requestImageUrl",
+    "deviceDonationChoices",
+  ]);
+  const isEmpty = Object.entries(data).some(([key, value]) => {
+    if (optionalKeys.has(key)) return false;
+    if (Array.isArray(value)) return value.length === 0;
+    return !value || value.toString().trim() === "";
+  });
   if (isEmpty) {
     toast.error("Please fill in all fields before submitting.", {
       style: {

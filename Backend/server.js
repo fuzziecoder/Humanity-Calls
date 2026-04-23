@@ -12,6 +12,8 @@ import volunteerRoutes from "./routes/volunteerRoutes.js";
 import idCardRoutes from "./routes/idCardRoutes.js";
 import emailUploadRoutes from "./routes/emailUploadRoutes.js";
 import carouselRoutes from "./routes/carouselRoutes.js";
+import publicFormRoutes from "./routes/publicFormRoutes.js";
+import formAssetRoutes from "./routes/formAssetRoutes.js";
 import { initAdmin } from "./controllers/authController.js";
 import { initBirthdayCron } from "./utils/birthdayCron.js";
 
@@ -66,6 +68,8 @@ app.use("/api/volunteers", volunteerRoutes);
 app.use("/api/id-card", idCardRoutes);
 app.use("/api/email", emailUploadRoutes);
 app.use("/api/carousel", carouselRoutes);
+app.use("/api/public", publicFormRoutes);
+app.use("/api/form-assets", formAssetRoutes);
 app.use("/api", emailRoutes);
 
 const PORT = process.env.PORT || 5000;
