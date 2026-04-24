@@ -96,7 +96,7 @@ const HeroSection = () => {
 
   // Parallax transforms
   const textY = useTransform(scrollYProgress, [0, 1], [0, 100]);
-  const overlayOpacity = useTransform(scrollYProgress, [0, 0.5], [0.65, 0.85]);
+  const overlayOpacity = useTransform(scrollYProgress, [0, 0.5], [0.42, 0.62]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
 
   // Stagger animation variants
@@ -138,8 +138,8 @@ const HeroSection = () => {
         className="absolute inset-0 z-1"
         style={{ opacity: overlayOpacity }}
       >
-        <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/60 to-black/30" />
-        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/55 via-black/35 to-black/12" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/35 via-transparent to-black/10" />
       </motion.div>
 
       {/* ── Subtle grain texture ── */}

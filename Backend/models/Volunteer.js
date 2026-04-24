@@ -62,6 +62,14 @@ const volunteerSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
+  locationAddress: {
+    type: String,
+    required: true,
+  },
+  deviceDonationChoices: {
+    type: [String],
+    default: [],
+  },
   govIdType: {
     type: String,
     enum: ["Aadhar Card", "Voter ID", "PAN Card", "Passport", "Other"],

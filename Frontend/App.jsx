@@ -24,6 +24,7 @@ const AnimalRescue = lazy(() => import("./pages/AnimalRescue"));
 const Collaborate = lazy(() => import("./pages/Collaborate"));
 const Volunteer = lazy(() => import("./pages/Volunteer"));
 const Donate = lazy(() => import("./pages/Donate"));
+const BloodDonation = lazy(() => import("./pages/BloodDonation"));
 const WallOfFame = lazy(() => import("./pages/WallOfFame"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -39,6 +40,7 @@ const GalleryManager = lazy(() => import("./pages/admin/GalleryManager"));
 const RequestsManager = lazy(() => import("./pages/admin/RequestsManager"));
 const EmailManager = lazy(() => import("./pages/admin/EmailManager"));
 const AddGalleryManager = lazy(() => import("./pages/admin/AddGalleryManager"));
+const FormImagesManager = lazy(() => import("./pages/admin/FormImagesManager"));
 const Verify = lazy(() => import("./pages/Verify"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -104,6 +106,7 @@ const AppContent = () => {
             <Route path="/collaborate" element={<Collaborate />} />
             <Route path="/volunteer" element={<Volunteer />} />
             <Route path="/donate" element={<Donate />} />
+            <Route path="/blood-donation" element={<BloodDonation />} />
             <Route path="/wall-of-fame" element={<WallOfFame />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
@@ -120,6 +123,7 @@ const AppContent = () => {
               <Route path="requests" element={<RequestsManager />} />
               <Route path="send-mails" element={<EmailManager />} />
               <Route path="add-gallery" element={<AddGalleryManager />} />
+              <Route path="form-images" element={<FormImagesManager />} />
             </Route>
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />

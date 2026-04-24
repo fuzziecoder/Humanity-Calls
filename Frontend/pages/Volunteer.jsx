@@ -8,6 +8,7 @@ import withFormAuth from "../components/withFormAuth";
 import ProfilePictureCropper from "../components/ProfilePictureCropper";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { getCurrentLocationLabel } from "../utils/location";
 import { FaCheckCircle, FaTimes, FaCamera, FaInfoCircle, FaPen, FaShareAlt } from "react-icons/fa";
 import hclogo from "../assets/humanitycallslogo.avif";
 
@@ -34,6 +35,7 @@ const Volunteer = ({
   const [volunteerStatus, setVolunteerStatus] = useState(null);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
   const [activeCount, setActiveCount] = useState(null);
+  const [locating, setLocating] = useState(false);
   // Crop modal state
   const [rawProfileImage, setRawProfileImage] = useState(null);
   const [showCropModal, setShowCropModal] = useState(false);
@@ -160,6 +162,8 @@ const Volunteer = ({
         dob: "",
         joiningDate: "",
         termsAccepted: false,
+        locationAddress: "",
+        deviceDonationChoices: [],
       }
     );
   });
@@ -173,6 +177,14 @@ const Volunteer = ({
       }));
     }
   }, [user]);
+
+  useEffect(() => {
+    if (formData.locationAddress) return;
+    getCurrentLocationLabel()
+      .then((label) => setFormData((prev) => ({ ...prev, locationAddress: prev.locationAddress || label })))
+      .catch(() => null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (formData) {
@@ -342,6 +354,8 @@ const Volunteer = ({
         dob: "",
         joiningDate: "",
         termsAccepted: false,
+        locationAddress: "",
+        deviceDonationChoices: [],
       });
       setSelectedFile(null);
       setSelectedProfileFile(null);
@@ -400,6 +414,18 @@ const Volunteer = ({
       ) < 5
     ) {
       setHasScrolledToBottom(true);
+    }
+  };
+
+  const captureLocation = async () => {
+    setLocating(true);
+    try {
+      const label = await getCurrentLocationLabel();
+      setFormData((prev) => ({ ...prev, locationAddress: label }));
+    } catch (_error) {
+      toast.error("Unable to fetch location. Please enter manually.");
+    } finally {
+      setLocating(false);
     }
   };
 
@@ -640,6 +666,29 @@ const Volunteer = ({
                       className={inputClasses}
                     />
                   </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="text-xs text-gray-500 ml-1">
+                      Current Location / Address *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={captureLocation}
+                      className="text-[10px] px-3 py-1 rounded-lg border border-primary text-primary font-bold"
+                    >
+                      {locating ? "Locating..." : "Use my location"}
+                    </button>
+                  </div>
+                  <textarea
+                    required
+                    rows={2}
+                    name="locationAddress"
+                    value={formData.locationAddress}
+                    onChange={handleChange}
+                    placeholder="Your current city/area and address"
+                    className={inputClasses}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -929,6 +978,30 @@ const Volunteer = ({
                             name="rolePreference"
                             value={opt}
                             checked={formData.rolePreference.includes(opt)}
+                            onChange={handleChange}
+                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                          />
+                          <span className="text-sm text-gray-600">{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 block">
+                      E. Optional Donation Support (for Poor & Needy)
+                    </label>
+                    <p className="text-xs text-gray-500">
+                      Select if you can donate any items with your volunteering support.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {["T-Shirts", "Gadgets", "Laptops", "Phones"].map((opt) => (
+                        <label key={opt} className="flex items-center gap-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="deviceDonationChoices"
+                            value={opt}
+                            checked={formData.deviceDonationChoices.includes(opt)}
                             onChange={handleChange}
                             className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                           />
