@@ -278,7 +278,6 @@ const RequestsManager = () => {
       <IdModal isOpen={showIdModal} onClose={() => setShowIdModal(false)} idImage={selectedIdImage} />
       <ViewMoreModal isOpen={showViewMoreModal} onClose={() => setShowViewMoreModal(false)} vol={selectedVolunteerDetails} />
 
-<<<<<<< HEAD
       <VolunteerEditModal 
         isOpen={showVolunteerEditModal} 
         onClose={() => setShowVolunteerEditModal(false)} 
@@ -286,104 +285,6 @@ const RequestsManager = () => {
         onUpdate={fetchRequests} 
       />
 
-=======
-      {/* Edit Modal */}
-      {showVolunteerEditModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="bg-primary px-8 py-6 text-white flex justify-between items-center">
-              <h3 className="text-xl font-black uppercase tracking-widest">Edit Request Details</h3>
-              <button onClick={() => setShowVolunteerEditModal(false)} className="p-2 hover:bg-white/10 rounded-xl transition-all"><FaTimes size={20} /></button>
-            </div>
-            <form onSubmit={handleVolunteerUpdate} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Full Name</label>
-                  <input required type="text" value={volunteerToEdit.fullName} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, fullName: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Email (Read Only)</label>
-                  <input readOnly type="email" value={volunteerToEdit.email} className="w-full px-5 py-3 border border-border rounded-xl bg-gray-50 text-gray-500 outline-none cursor-not-allowed" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Phone</label>
-                  <input required type="text" value={volunteerToEdit.phone} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, phone: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Date of Birth</label>
-                  <input required type="date" value={volunteerToEdit.dob ? new Date(volunteerToEdit.dob).toISOString().split('T')[0] : ''} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, dob: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Gender</label>
-                  <select value={volunteerToEdit.gender} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, gender: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none appearance-none">
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Blood Group</label>
-                  <select value={volunteerToEdit.bloodGroup} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, bloodGroup: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none appearance-none">
-                    <option value="">Select BG</option>
-                    {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => <option key={bg} value={bg}>{bg}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Occupation</label>
-                  <select value={volunteerToEdit.occupation} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, occupation: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none appearance-none">
-                    <option value="">Select Occupation</option>
-                    {["Student", "Professional", "Business", "Self-Employed", "Retired", "Other"].map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
-                </div>
-                {volunteerToEdit.occupation === 'Other' && (
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Specify Occupation</label>
-                    <input type="text" value={volunteerToEdit.occupationDetail} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, occupationDetail: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none" />
-                  </div>
-                )}
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Skills</label>
-                <textarea rows="2" value={volunteerToEdit.skills} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, skills: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none resize-none" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Motivation/Interest</label>
-                <textarea rows="2" value={volunteerToEdit.interest} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, interest: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none resize-none" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Location</label>
-                <textarea rows="2" value={volunteerToEdit.locationAddress || ""} onChange={(e) => setVolunteerToEdit({ ...volunteerToEdit, locationAddress: e.target.value })} className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none resize-none" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-text-body/40">Donation Support</label>
-                <input
-                  type="text"
-                  value={(volunteerToEdit.deviceDonationChoices || []).join(", ")}
-                  onChange={(e) =>
-                    setVolunteerToEdit({
-                      ...volunteerToEdit,
-                      deviceDonationChoices: e.target.value
-                        .split(",")
-                        .map((item) => item.trim())
-                        .filter(Boolean),
-                    })
-                  }
-                  placeholder="T-Shirts, Gadgets, Laptops, Phones"
-                  className="w-full px-5 py-3 border border-border rounded-xl focus:border-primary outline-none"
-                />
-              </div>
-              <div className="flex gap-4 pt-4 sticky bottom-0 bg-white">
-                <button type="button" onClick={() => setShowVolunteerEditModal(false)} className="flex-1 py-4 border border-border rounded-2xl font-bold hover:bg-bg transition-all text-sm">Cancel</button>
-                <button type="submit" disabled={isUpdatingVolunteer} className="flex-1 py-4 bg-primary text-white rounded-2xl font-black shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all text-sm">
-                  {isUpdatingVolunteer ? "Syncing..." : "Update Request"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
->>>>>>> 1aeb0252233e8e4418b51a030f8221e0f3a15895
 
       {/* Export Modal */}
       {showExportModal && (
