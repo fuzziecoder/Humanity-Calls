@@ -9,9 +9,20 @@ const Node = ({ node, depth = 0 }) => {
         className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-white px-5 py-4 shadow-sm"
         style={{ marginLeft: depth * 16 }}
       >
-        <div>
-          <div className="text-sm font-black text-text-body">{node.name}</div>
-          <div className="text-[11px] text-text-body/50 font-bold">{node.teamRole || "Member"}</div>
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 rounded-full overflow-hidden border border-border bg-bg shrink-0">
+            {node.profilePicture ? (
+              <img src={node.profilePicture} alt={node.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-primary font-black">
+                {(node.name || "?").charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-black text-text-body truncate">{node.name}</div>
+            <div className="text-[11px] text-text-body/50 font-bold truncate">{node.teamRole || "Member"}</div>
+          </div>
         </div>
         <div className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
           Team
@@ -51,7 +62,7 @@ const OurTeam = () => {
           Our <span className="text-primary italic">Team</span>
         </h1>
         <p className="mt-4 text-text-body/60 max-w-2xl">
-          A simple team tree showing who works under whom. (Admins can update roles & reporting structure.)
+          Team structure with existing registered members, roles, and profile photos.
         </p>
 
         <div className="mt-10">

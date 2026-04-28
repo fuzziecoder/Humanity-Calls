@@ -194,8 +194,13 @@ export const updateVolunteerStatus = async (req, res) => {
 
     const volunteer = await Volunteer.findByIdAndUpdate(id, updateData, { new: true });
 
-    // Fire-and-forget: notify volunteer on approval (active or temporary)
-    if ((status === "active" || status === "temporary") && volunteer.email) {
+    // Fire-and-forget: notify volunteer on first-time approval (pending -> active/temporary)
+    // Do NOT send this for temporary<->active transitions, since we have custom templates for those.
+    if (
+      previous.status === "pending" &&
+      (status === "active" || status === "temporary") &&
+      volunteer.email
+    ) {
       const senderEmail = process.env.BREVO_SENDER_EMAIL;
       const senderName = process.env.BREVO_SENDER_NAME || "Humanity Calls";
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
