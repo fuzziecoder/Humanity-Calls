@@ -259,28 +259,30 @@ const PoorNeedy = ({
             <h3 className="text-2xl font-bold text-primary">
               Poor & Needy Forms
             </h3>
-            <div className="flex items-center gap-2 bg-bg p-1.5 rounded-2xl w-fit">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full md:w-auto">
               <button
                 type="button"
                 onClick={() => setActiveForm("request_help")}
-                className={`px-4 py-2 rounded-xl font-bold transition-all text-sm ${
+                className={`px-4 py-3 rounded-2xl font-bold transition-all text-sm border ${
                   activeForm === "request_help"
-                    ? "bg-primary text-white shadow-md"
-                    : "text-text-body/60 hover:text-primary hover:bg-white"
+                    ? "bg-primary text-white shadow-md border-primary"
+                    : "text-text-body/70 hover:text-primary bg-white border-border"
                 }`}
               >
-                Request for Help
+                <span className="block text-[10px] uppercase tracking-[0.25em] opacity-80">Seek Help</span>
+                <span>Request for Help</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveForm("help_now")}
-                className={`px-4 py-2 rounded-xl font-bold transition-all text-sm ${
+                className={`px-4 py-3 rounded-2xl font-bold transition-all text-sm border ${
                   activeForm === "help_now"
-                    ? "bg-primary text-white shadow-md"
-                    : "text-text-body/60 hover:text-primary hover:bg-white"
+                    ? "bg-primary text-white shadow-md border-primary"
+                    : "text-text-body/70 hover:text-primary bg-white border-border"
                 }`}
               >
-                Help Now
+                <span className="block text-[10px] uppercase tracking-[0.25em] opacity-80">Offer Help</span>
+                <span>Help Now</span>
               </button>
             </div>
           </div>

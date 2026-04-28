@@ -215,6 +215,44 @@ const Navbar = () => {
                 )}
               </Link>
 
+              <Link to="/our-team" className="relative px-5 py-2 group/nav">
+                <span
+                  className={`relative z-10 text-[13px] font-bold tracking-tight transition-colors duration-300 ${
+                    isActive("/our-team")
+                      ? "text-blood"
+                      : "text-black/60 group-hover/nav:text-blood"
+                  }`}
+                  style={{ fontFamily: '"Syne", sans-serif' }}
+                >
+                  Our Team
+                </span>
+                {isActive("/our-team") && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    className="absolute inset-x-2 bottom-[-10px] h-1 bg-blood rounded-t-full"
+                  />
+                )}
+              </Link>
+
+              <Link to="/blood" className="relative px-5 py-2 group/nav">
+                <span
+                  className={`relative z-10 text-[13px] font-bold tracking-tight transition-colors duration-300 ${
+                    isActive("/blood")
+                      ? "text-blood"
+                      : "text-black/60 group-hover/nav:text-blood"
+                  }`}
+                  style={{ fontFamily: '"Syne", sans-serif' }}
+                >
+                  Donate Blood
+                </span>
+                {isActive("/blood") && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    className="absolute inset-x-2 bottom-[-10px] h-1 bg-blood rounded-t-full"
+                  />
+                )}
+              </Link>
+
               {navigation.map((group) => (
                 <DropdownNavItem
                   key={group.title}
@@ -332,6 +370,28 @@ const Navbar = () => {
                     style={{ fontFamily: '"Syne", sans-serif' }}
                   >
                     Home
+                  </Link>
+
+                  <Link
+                    to="/our-team"
+                    className={`text-4xl font-black uppercase tracking-tighter py-6 border-b border-black/5 ${
+                      isActive("/our-team") ? "text-blood" : "text-black/10"
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                    style={{ fontFamily: '"Syne", sans-serif' }}
+                  >
+                    Our Team
+                  </Link>
+
+                  <Link
+                    to="/blood"
+                    className={`text-4xl font-black uppercase tracking-tighter py-6 border-b border-black/5 ${
+                      isActive("/blood") ? "text-blood" : "text-black/10"
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                    style={{ fontFamily: '"Syne", sans-serif' }}
+                  >
+                    Donate Blood
                   </Link>
 
                   {navigation.map((group) => (
