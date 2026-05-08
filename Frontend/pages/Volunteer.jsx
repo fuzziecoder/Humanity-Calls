@@ -68,6 +68,21 @@ const Volunteer = ({
   }, []);
 
   useEffect(() => {
+    const lenis = window.__lenis;
+    if (showTerms || showSuccessPopup || showCropModal) {
+      document.body.style.overflow = "hidden";
+      if (lenis) lenis.stop();
+    } else {
+      document.body.style.overflow = "";
+      if (lenis) lenis.start();
+    }
+    return () => {
+      document.body.style.overflow = "";
+      if (lenis) lenis.start();
+    };
+  }, [showTerms, showSuccessPopup, showCropModal]);
+
+  useEffect(() => {
     const fetchStatus = async () => {
       if (!user) {
         setIsCheckingStatus(false);
@@ -141,31 +156,30 @@ const Volunteer = ({
 
   const [formData, setFormData] = useState(() => {
     const saved = loadPendingFormData();
-    return (
-      saved || {
-        fullName: user?.name || "",
-        email: user?.email || "",
-        phone: "",
-        emergencyContact: "",
-        gender: "",
-        interest: "",
-        occupation: "",
-        occupationDetail: "",
-        skills: "",
-        timeCommitment: [],
-        workingMode: [],
-        rolePreference: [],
-        govIdType: "",
-        govIdImage: "",
-        profilePicture: "",
-        bloodGroup: "",
-        dob: "",
-        joiningDate: "",
-        termsAccepted: false,
-        locationAddress: "",
-        deviceDonationChoices: [],
-      }
-    );
+    const defaults = {
+      fullName: user?.name || "",
+      email: user?.email || "",
+      phone: "",
+      emergencyContact: "",
+      gender: "",
+      interest: "",
+      occupation: "",
+      occupationDetail: "",
+      skills: "",
+      timeCommitment: "",
+      workingMode: "",
+      rolePreference: "",
+      govIdType: "",
+      govIdImage: "",
+      profilePicture: "",
+      bloodGroup: "",
+      dob: "",
+      joiningDate: "",
+      termsAccepted: false,
+      locationAddress: "",
+      deviceDonationChoices: [],
+    };
+    return saved ? { ...defaults, ...saved } : defaults;
   });
 
   useEffect(() => {
@@ -275,16 +289,16 @@ const Volunteer = ({
       return;
     }
 
-    if (formData.timeCommitment.length === 0) {
-      toast.error("Please select at least one Time Commitment option");
+    if (!formData.timeCommitment) {
+      toast.error("Please select a Time Commitment option");
       return;
     }
-    if (formData.workingMode.length === 0) {
-      toast.error("Please select at least one Preferred Working Mode");
+    if (!formData.workingMode) {
+      toast.error("Please select a Preferred Working Mode");
       return;
     }
-    if (formData.rolePreference.length === 0) {
-      toast.error("Please select at least one Role Preference");
+    if (!formData.rolePreference) {
+      toast.error("Please select a Role Preference");
       return;
     }
 
@@ -926,18 +940,18 @@ const Volunteer = ({
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 block">
-                      B. Time Commitment * (Select at least one)
+                      B. Time Commitment *
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {["One-time Event", "Weekend Volunteer", "Monthly Commitment", "Project-Based", "Long-Term Association"].map((opt) => (
                         <label key={opt} className="flex items-center gap-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
                           <input
-                            type="checkbox"
+                            type="radio"
                             name="timeCommitment"
                             value={opt}
-                            checked={formData.timeCommitment.includes(opt)}
+                            checked={formData.timeCommitment === opt}
                             onChange={handleChange}
-                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                            className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                           />
                           <span className="text-sm text-gray-600">{opt}</span>
                         </label>
@@ -947,18 +961,18 @@ const Volunteer = ({
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 block">
-                      C. Preferred Working Mode * (Select at least one)
+                      C. Preferred Working Mode *
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {["On-ground (Field Work)", "Remote / Online", "Hybrid"].map((opt) => (
                         <label key={opt} className="flex items-center gap-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
                           <input
-                            type="checkbox"
+                            type="radio"
                             name="workingMode"
                             value={opt}
-                            checked={formData.workingMode.includes(opt)}
+                            checked={formData.workingMode === opt}
                             onChange={handleChange}
-                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                            className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                           />
                           <span className="text-sm text-gray-600">{opt}</span>
                         </label>
@@ -968,18 +982,18 @@ const Volunteer = ({
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 block">
-                      D. Role Preference * (Select at least one)
+                      D. Role Preference *
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {["Team Member", "Team Leader", "Coordinator", "Consultant / Advisor", "Intern"].map((opt) => (
                         <label key={opt} className="flex items-center gap-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
                           <input
-                            type="checkbox"
+                            type="radio"
                             name="rolePreference"
                             value={opt}
-                            checked={formData.rolePreference.includes(opt)}
+                            checked={formData.rolePreference === opt}
                             onChange={handleChange}
-                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                            className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                           />
                           <span className="text-sm text-gray-600">{opt}</span>
                         </label>
@@ -1001,7 +1015,7 @@ const Volunteer = ({
                             type="checkbox"
                             name="deviceDonationChoices"
                             value={opt}
-                            checked={formData.deviceDonationChoices.includes(opt)}
+                            checked={formData.deviceDonationChoices?.includes(opt)}
                             onChange={handleChange}
                             className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                           />
@@ -1113,6 +1127,7 @@ const Volunteer = ({
               ref={scrollRef}
               onScroll={handleScroll}
               className="p-8 overflow-y-auto text-gray-600 leading-relaxed space-y-6"
+              data-lenis-prevent
             >
               <div>
                 <h4 className="text-xl font-black text-primary mb-4 border-b pb-2 italic">

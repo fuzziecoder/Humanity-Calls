@@ -51,15 +51,15 @@ const volunteerSchema = new mongoose.Schema({
     required: true,
   },
   timeCommitment: {
-    type: [String],
+    type: String,
     required: true,
   },
   workingMode: {
-    type: [String],
+    type: String,
     required: true,
   },
   rolePreference: {
-    type: [String],
+    type: String,
     required: true,
   },
   locationAddress: {
