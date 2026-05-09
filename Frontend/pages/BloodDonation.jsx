@@ -170,7 +170,7 @@ const BloodDonation = () => {
               className="w-full px-4 py-3 border border-border rounded-xl"
             />
             <Button type="submit" isLoading={loading} variant="blood" className="w-full py-4">
-              {t("request_donors.submit_request")}
+              Donate Blood
             </Button>
           </form>
         </div>
