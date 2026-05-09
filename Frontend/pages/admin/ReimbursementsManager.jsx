@@ -38,6 +38,17 @@ const ReimbursementsManager = () => {
     return items.filter((i) => JSON.stringify(i).toLowerCase().includes(q));
   }, [items, searchQuery]);
 
+  const totals = useMemo(() => {
+    const totalRequested = items.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+    const totalApproved = items
+      .filter((row) => row.status === "approved" || row.status === "paid")
+      .reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+    const totalPending = items
+      .filter((row) => row.status === "pending")
+      .reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+    return { totalRequested, totalApproved, totalPending };
+  }, [items]);
+
   const updateStatus = async (id, status) => {
     try {
       const token = sessionStorage.getItem("adminToken");
@@ -71,6 +82,21 @@ const ReimbursementsManager = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-12 pr-4 py-2 border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all w-full text-sm"
             />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          <div className="rounded-xl border border-border p-4 bg-bg/40">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-text-body/40">Total Requested</p>
+            <p className="text-2xl font-black text-primary mt-1">₹{totals.totalRequested.toLocaleString("en-IN")}</p>
+          </div>
+          <div className="rounded-xl border border-green-200 p-4 bg-green-50">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-green-700/70">Total Approved</p>
+            <p className="text-2xl font-black text-green-700 mt-1">₹{totals.totalApproved.toLocaleString("en-IN")}</p>
+          </div>
+          <div className="rounded-xl border border-amber-200 p-4 bg-amber-50">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-700/70">Pending Amount</p>
+            <p className="text-2xl font-black text-amber-700 mt-1">₹{totals.totalPending.toLocaleString("en-IN")}</p>
           </div>
         </div>
 

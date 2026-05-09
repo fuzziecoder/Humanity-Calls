@@ -17,6 +17,7 @@ import {
   FaCalendarAlt,
   FaPen,
   FaCamera,
+  FaPaperclip,
 } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
 import { useUser } from "../context/UserContext";
@@ -904,7 +905,16 @@ const Profile = () => {
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-text-body/40 uppercase tracking-widest">Receipt (optional)</label>
-                <input type="file" accept="image/*" onChange={handleReimbReceiptUpload} className="w-full text-sm" />
+                <label className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer bg-bg/30">
+                  <span className="inline-flex items-center gap-2 text-sm font-bold text-text-body/70">
+                    <FaPaperclip className="text-primary" />
+                    {reimbForm.receiptImageUrl ? "Change uploaded receipt" : "Upload receipt image"}
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+                    Browse
+                  </span>
+                  <input type="file" accept="image/*" onChange={handleReimbReceiptUpload} className="hidden" />
+                </label>
                 {reimbUploading && <p className="text-xs text-text-body/60">Uploading receipt...</p>}
                 {reimbForm.receiptImageUrl && (
                   <a href={reimbForm.receiptImageUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary hover:underline">

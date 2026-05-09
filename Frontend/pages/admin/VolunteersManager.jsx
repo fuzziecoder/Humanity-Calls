@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { 
   FaUserFriends, FaSearch, FaDownload, 
-  FaEye, FaEdit, FaBan, FaTrash, FaCheck, FaTimes 
+  FaEye, FaEdit, FaBan, FaTrash, FaCheck, FaTimes, FaIdCard
 } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -122,6 +122,34 @@ const VolunteersManager = () => {
     autoTable(doc, { head: [["ID", "Name", "Email", "Status"]], body: rows, startY: 20 });
     doc.save(`Volunteers_${volunteerStatusTab}_${new Date().toLocaleDateString()}.pdf`);
     setShowExportModal(false);
+  };
+
+  const handleDownloadMemberId = async (volunteer) => {
+    if (!volunteer?._id || volunteer.status !== "active") {
+      toast.info("ID card is available only for active volunteers");
+      return;
+    }
+    try {
+      const token = sessionStorage.getItem("adminToken");
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/id-card/download/${volunteer._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob",
+        },
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${volunteer.volunteerId || volunteer.fullName || "member-id"}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("ID card downloaded");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to download ID card");
+    }
   };
 
   return (
@@ -254,6 +282,13 @@ const VolunteersManager = () => {
                           className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg font-bold text-[11px] hover:bg-primary/20 transition-all whitespace-nowrap"
                         >
                           ⚙ Status
+                        </button>
+                        <button
+                          onClick={() => handleDownloadMemberId(vol)}
+                          className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                          title="Download member ID"
+                        >
+                          <FaIdCard size={14} />
                         </button>
                         <button
                           onClick={() => { setVolunteerToDelete(vol); setShowDeleteModal(true); }}

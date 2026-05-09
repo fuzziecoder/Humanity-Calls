@@ -142,7 +142,6 @@ const PoorNeedy = ({
 
   const handleSubmitRequestHelp = async (e) => {
     e.preventDefault();
-    if (!user) return;
     setLoading(true);
 
     try {
@@ -187,7 +186,6 @@ const PoorNeedy = ({
 
   const handleSubmitHelpNow = async (e) => {
     e.preventDefault();
-    if (!user) return;
     setLoading(true);
     try {
       const token = sessionStorage.getItem("token");

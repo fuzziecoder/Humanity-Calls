@@ -1,9 +1,18 @@
 import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
-import PrimaryCTA from "./Common/PrimaryCTA";
 
-const Card = ({ title, description, color, image, index, total, to, btnText }) => {
+const ActionButton = ({ to, label }) => (
+  <Link
+    to={to}
+    className="inline-flex flex-1 items-center justify-center px-4 py-3 rounded-full border border-white/80 text-white text-[11px] font-black uppercase tracking-[0.2em] bg-black/35 backdrop-blur-md shadow-[0_10px_25px_rgba(0,0,0,0.35)] hover:bg-white hover:text-[#1A1A1A] hover:border-white hover:shadow-[0_12px_30px_rgba(255,255,255,0.4)] transition-all duration-300"
+  >
+    {label}
+  </Link>
+);
+
+const Card = ({ title, description, color, image, index, total, actions = [] }) => {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -76,9 +85,19 @@ const Card = ({ title, description, color, image, index, total, to, btnText }) =
             {description}
           </motion.p>
 
-          <PrimaryCTA to={to} delay={0.6} className="pt-2">
-            {btnText}
-          </PrimaryCTA>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="pt-2 w-full max-w-lg"
+          >
+            <div className="flex items-center gap-3 w-full">
+              {actions.map((action) => (
+                <ActionButton key={`${action.to}-${action.label}`} to={action.to} label={action.label} />
+              ))}
+            </div>
+            <div className="mt-3 h-px w-full bg-linear-to-r from-transparent via-white/50 to-transparent" />
+          </motion.div>
         </div>
 
         {/* Card Numbering */}
@@ -99,25 +118,31 @@ const PinnedStackingCards = () => {
       description: t("home.poor_needy_paragraph"),
       color: "linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)",
       image: "https://res.cloudinary.com/daokrum7i/image/upload/f_auto,q_auto,w_800,c_limit/v1767814233/humanity_calls_poor_needy_oef47s.avif",
-      to: "/poor-needy",
-      btnText: t("home.support_today")
+      actions: [
+        { to: "/poor-needy", label: "Request for Help" },
+        { to: "/poor-needy", label: "Help Now" },
+      ],
     },
     {
       title: t("home.animal_rescue_title"),
       description: t("home.animal_rescue_paragraph"),
       color: "linear-gradient(135deg, #2ECC71 0%, #27AE60 100%)",
       image: "https://res.cloudinary.com/daokrum7i/image/upload/f_auto,q_auto,w_800,c_limit/v1767814232/humanity_calls_animal_resque_dxz9jb.avif",
-      to: "/animal-rescue",
-      btnText: t("home.rescue_today")
+      actions: [
+        { to: "/animal-rescue", label: "Ask for Rescue" },
+        { to: "/animal-rescue", label: "Adopt Tdy" },
+      ],
     },
     {
       title: t("home.donate_blood_save_lives"),
       description: t("home.blood_donation_paragraph"),
       color: "linear-gradient(135deg, #E74C3C 0%, #B22222 100%)",
       image: "https://res.cloudinary.com/daokrum7i/image/upload/f_auto,q_auto,w_800/v1767814232/hc_blood_donation_mfwveo.png",
-      to: "/blood",
-      btnText: t("nav.donate_now")
-    }
+      actions: [
+        { to: "/blood-donation", label: "Donate Now" },
+        { to: "/request-donors", label: "Find Donors" },
+      ],
+    },
   ];
 
   return (

@@ -34,3 +34,26 @@ export const adminOnly = (req, res, next) => {
     res.status(403).json({ message: "Access denied: Admins only" });
   }
 };
+
+export const optionalProtect = async (req, _res, next) => {
+  try {
+    let token = req.cookies.token;
+
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    if (!token) {
+      req.user = null;
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret");
+    const user = await User.findById(decoded.id).select("-password");
+    req.user = user || null;
+    next();
+  } catch (_error) {
+    req.user = null;
+    next();
+  }
+};

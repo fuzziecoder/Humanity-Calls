@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FaWpforms, FaSearch, FaTrash } from "react-icons/fa";
+import { FaWpforms, FaSearch, FaTrash, FaDownload } from "react-icons/fa";
 import { useOutletContext } from "react-router-dom";
 
 const TABS = [
@@ -79,6 +79,57 @@ const FormsManager = () => {
     }
   };
 
+  const downloadSubmission = (row) => {
+    const payload = {
+      id: row._id,
+      kind: row.kind,
+      createdAt: row.createdAt,
+      user: row.user || null,
+      data: row.data || {},
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${row.kind || "form"}_${row._id}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const renderDataRows = (data) => {
+    if (!data || typeof data !== "object") return null;
+    return Object.entries(data).map(([key, value]) => {
+      const textValue =
+        typeof value === "string"
+          ? value
+          : typeof value === "number" || typeof value === "boolean"
+            ? String(value)
+            : Array.isArray(value)
+              ? value.join(", ")
+              : value && typeof value === "object"
+                ? JSON.stringify(value)
+                : "—";
+      const isLink = /^https?:\/\//i.test(textValue);
+
+      return (
+        <div key={key} className="rounded-xl border border-border p-3 bg-bg/30">
+          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-text-body/40 mb-1">
+            {key}
+          </div>
+          {isLink ? (
+            <a href={textValue} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary hover:underline break-all">
+              {textValue}
+            </a>
+          ) : (
+            <div className="text-sm text-text-body/80 break-words">{textValue || "—"}</div>
+          )}
+        </div>
+      );
+    });
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
@@ -132,18 +183,33 @@ const FormsManager = () => {
                     </div>
                   </div>
                   {activeTab !== "blood_donation_public" && activeTab !== "blood_requests" && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => downloadSubmission(r)}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary font-black text-[11px] hover:bg-primary/15"
+                      >
+                        <FaDownload /> Download
+                      </button>
+                      <button
+                        onClick={() => deleteRow(r._id)}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blood/10 text-blood font-black text-[11px] hover:bg-blood/15"
+                      >
+                        <FaTrash /> Delete
+                      </button>
+                    </div>
+                  )}
+                  {(activeTab === "blood_donation_public" || activeTab === "blood_requests") && (
                     <button
-                      onClick={() => deleteRow(r._id)}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blood/10 text-blood font-black text-[11px] hover:bg-blood/15"
+                      onClick={() => downloadSubmission(r)}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary font-black text-[11px] hover:bg-primary/15"
                     >
-                      <FaTrash /> Delete
+                      <FaDownload /> Download
                     </button>
                   )}
                 </div>
-
-                <pre className="mt-4 text-[12px] bg-bg rounded-xl p-4 overflow-auto">
-{JSON.stringify(r.data, null, 2)}
-                </pre>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {renderDataRows(r.data)}
+                </div>
               </div>
             ))}
           </div>

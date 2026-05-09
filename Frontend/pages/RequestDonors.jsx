@@ -11,6 +11,7 @@ import { fetchFormAssets } from "../utils/formAssets";
 import { getCurrentLocationLabel } from "../utils/location";
 import withFormAuth from "../components/withFormAuth";
 import { toast } from "react-toastify";
+import { FaPaperclip } from "react-icons/fa";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -119,7 +120,6 @@ const RequestDonors = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
     setLoading(true);
 
     const success = await sendEmail(
@@ -374,7 +374,16 @@ const RequestDonors = ({
               <label className="text-xs font-bold text-blood-dark uppercase tracking-widest">
                 Attach supporting image (optional)
               </label>
-              <input type="file" accept="image/*" onChange={handleRequestImage} className="w-full text-sm" />
+              <label className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer bg-bg/30">
+                <span className="inline-flex items-center gap-2 text-sm font-bold text-text-body/70">
+                  <FaPaperclip className="text-primary" />
+                  {formData.requestImageUrl ? "Change selected file" : "Choose a file"}
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+                  Browse
+                </span>
+                <input type="file" accept="image/*" onChange={handleRequestImage} className="hidden" />
+              </label>
               {uploading && <p className="text-xs text-text-body/60">Uploading image...</p>}
               {formData.requestImageUrl && (
                 <img src={formData.requestImageUrl} alt="Request support" className="max-h-40 rounded-lg border border-border mt-2" />
@@ -388,7 +397,7 @@ const RequestDonors = ({
                 isLoading={loading}
                 className="w-full py-5 text-lg shadow-lg shadow-blood/20"
               >
-                {t("request_donors.submit_request")}
+                Request Blood
               </Button>,
               formData,
             )}

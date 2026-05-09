@@ -13,11 +13,9 @@ export const createFormSubmission = async (req, res) => {
     if (!allowedKinds.has(kind)) {
       return res.status(400).json({ message: "Invalid form kind" });
     }
-    if (!req.user?.id) return res.status(401).json({ message: "Unauthorized" });
-
     const data = req.body || {};
     const doc = await FormSubmission.create({
-      user: req.user.id,
+      user: req.user?.id || null,
       kind,
       data,
     });

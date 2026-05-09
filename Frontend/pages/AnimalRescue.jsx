@@ -9,6 +9,9 @@ import { sendEmail } from "../utils/email";
 import withFormAuth from "../components/withFormAuth";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { getCurrentLocationLabel } from "../utils/location";
+import { uploadPublicImage } from "../utils/publicForms";
+import { FaPaperclip } from "react-icons/fa";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -22,6 +25,8 @@ const AnimalRescue = ({
   const { t, i18n } = useTranslation();
   const containerRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [uploadingRescueImage, setUploadingRescueImage] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [activeForm, setActiveForm] = useState("rescue"); // rescue | adopt
 
   useLayoutEffect(() => {
@@ -119,6 +124,8 @@ const AnimalRescue = ({
         phone: "",
         email: user?.email || "",
         address: "",
+        severity: "",
+        animalImageUrl: "",
         message: "",
       }
     );
@@ -144,7 +151,10 @@ const AnimalRescue = ({
 
   const handleSubmitRescue = async (e) => {
     e.preventDefault();
-    if (!user) return;
+    if (!rescueData.animalImageUrl) {
+      toast.error("Please upload an animal image");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -169,6 +179,8 @@ const AnimalRescue = ({
         phone: "",
         email: user?.email || "",
         address: "",
+        severity: "",
+        animalImageUrl: "",
         message: "",
       });
       toast.success("Rescue request submitted");
@@ -189,7 +201,6 @@ const AnimalRescue = ({
 
   const handleSubmitAdopt = async (e) => {
     e.preventDefault();
-    if (!user) return;
     setLoading(true);
     try {
       const token = sessionStorage.getItem("token");
@@ -226,6 +237,34 @@ const AnimalRescue = ({
   };
 
   const inputClasses = "w-full px-4 py-3 border border-border bg-white rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm disabled:opacity-70 disabled:cursor-not-allowed";
+
+  const handleAutoLocation = async () => {
+    setLocating(true);
+    try {
+      const label = await getCurrentLocationLabel();
+      setRescueData((prev) => ({ ...prev, address: label }));
+    } catch (_error) {
+      toast.error("Unable to fetch location. Please enter manually.");
+    } finally {
+      setLocating(false);
+    }
+  };
+
+  const handleRescueImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingRescueImage(true);
+    try {
+      const imageUrl = await uploadPublicImage(file);
+      setRescueData((prev) => ({ ...prev, animalImageUrl: imageUrl || "" }));
+      toast.success("Animal image uploaded");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Image upload failed");
+    } finally {
+      setUploadingRescueImage(false);
+      e.target.value = "";
+    }
+  };
 
   return (
     <div className="bg-bg pb-24" ref={containerRef}>
@@ -337,9 +376,18 @@ const AnimalRescue = ({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-text-body uppercase">
-                  Location / Address *
-                </label>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="text-xs font-bold text-text-body uppercase">
+                    Location / Address *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAutoLocation}
+                    className="text-[10px] px-3 py-1 rounded-lg border border-primary text-primary font-bold"
+                  >
+                    {locating ? "Locating..." : "Use my location"}
+                  </button>
+                </div>
                 <input
                   required
                   name="address"
@@ -347,6 +395,42 @@ const AnimalRescue = ({
                   onChange={handleRescueChange}
                   className={inputClasses}
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-text-body uppercase">
+                  Severity *
+                </label>
+                <select
+                  required
+                  name="severity"
+                  value={rescueData.severity}
+                  onChange={handleRescueChange}
+                  className={inputClasses}
+                >
+                  <option value="">Select severity</option>
+                  <option value="Low - Animal is safe for now">Low - Animal is safe for now</option>
+                  <option value="Medium - Animal needs help soon">Medium - Animal needs help soon</option>
+                  <option value="High - Emergency rescue needed">High - Emergency rescue needed</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-text-body uppercase">
+                  Upload Animal Image *
+                </label>
+                <label className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer bg-bg/30">
+                  <span className="inline-flex items-center gap-2 text-sm font-bold text-text-body/70">
+                    <FaPaperclip className="text-primary" />
+                    {rescueData.animalImageUrl ? "Change selected file" : "Choose a file"}
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+                    Browse
+                  </span>
+                  <input type="file" accept="image/*" onChange={handleRescueImageUpload} className="hidden" />
+                </label>
+                {uploadingRescueImage && <p className="text-xs text-text-body/60">Uploading image...</p>}
+                {rescueData.animalImageUrl && (
+                  <img src={rescueData.animalImageUrl} alt="Animal support" className="max-h-44 rounded-lg border border-border mt-2" />
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold text-text-body uppercase">
