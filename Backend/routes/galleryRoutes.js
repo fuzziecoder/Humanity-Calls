@@ -27,20 +27,9 @@ const storage = new CloudinaryStorage({
   params: {
     folder: "humanity_calls_gallery",
     allowed_formats: ["jpg", "png", "jpeg", "webp", "avif"],
-    // Apply transformations on upload: Limit size, and add text + logo watermarks
+    // Apply transformations on upload: Limit size, and add text watermark
     transformation: [
       { width: 1000, height: 1000, crop: "limit", quality: "auto", fetch_format: "auto" },
-      // Logo watermark (top right)
-      // Note: for non-standard formats like avif or webp, Cloudinary requires the extension in the overlay ID
-      // using syntax: folder:filename.ext or just filename.ext
-      { 
-        overlay: "favicon-32x32_kca2tb", 
-        gravity: "north_east", 
-        x: 20, 
-        y: 20, 
-        width: 90, 
-        opacity: 100 
-      },
       // Text watermark (center)
       { 
         overlay: { font_family: "Arial", font_size: 54, font_weight: "bold", text: "HC" }, 
@@ -61,8 +50,13 @@ router.get("/", getGallery);
 router.post("/upload", protect, (req, res, next) => {
   upload.single("image")(req, res, (err) => {
     if (err) {
-      console.error("Cloudinary upload error:", err);
-      return res.status(500).json({ message: "Upload failed", error: err.message || err });
+      console.error("Full Cloudinary upload error object:", JSON.stringify(err, null, 2));
+      console.error("Cloudinary upload error message:", err.message);
+      return res.status(500).json({ 
+        message: "Upload failed at middleware", 
+        error: err.message || err,
+        details: err
+      });
     }
     next();
   });

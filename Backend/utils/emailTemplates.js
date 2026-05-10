@@ -146,7 +146,7 @@ export const volunteerApplicationReceivedTemplate = (vol) => {
 /**
  * Template 2 — Volunteer notification: application approved
  */
-export const volunteerApprovalTemplate = (vol, frontendUrl) => {
+export const volunteerApprovalTemplate = (vol, frontendUrl, password) => {
   const profileUrl = `${frontendUrl || process.env.FRONTEND_URL || "http://localhost:5173"}/profile`;
 
   const inner = `
@@ -189,23 +189,20 @@ export const volunteerApprovalTemplate = (vol, frontendUrl) => {
     <!-- Basic Details -->
     <tr>
       <td style="padding:0 32px 24px;">
-        <p style="margin:0 0 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#C62828;">Your Details</p>
+        <p style="margin:0 0 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#C62828;">Your Login Credentials</p>
         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border:1px solid #EEF0F6;border-radius:12px;overflow:hidden;">
           <tr>
-            <td style="padding:12px 16px;border-bottom:1px solid #EEF0F6;font-weight:600;color:#555;font-size:13px;width:40%;">Name</td>
-            <td style="padding:12px 16px;border-bottom:1px solid #EEF0F6;color:#1A1A2E;font-size:13px;font-weight:700;">${vol.fullName}</td>
+            <td style="padding:12px 16px;border-bottom:1px solid #EEF0F6;font-weight:600;color:#555;font-size:13px;width:40%;">Email</td>
+            <td style="padding:12px 16px;border-bottom:1px solid #EEF0F6;color:#1A1A2E;font-size:13px;font-weight:700;">${vol.email}</td>
           </tr>
+          ${password ? `
           <tr>
-            <td style="padding:12px 16px;border-bottom:1px solid #EEF0F6;font-weight:600;color:#555;font-size:13px;">Email</td>
-            <td style="padding:12px 16px;border-bottom:1px solid #EEF0F6;color:#1A1A2E;font-size:13px;">${vol.email}</td>
-          </tr>
+            <td style="padding:12px 16px;border-bottom:1px solid #EEF0F6;font-weight:600;color:#555;font-size:13px;">Password</td>
+            <td style="padding:12px 16px;border-bottom:1px solid #EEF0F6;color:#C62828;font-size:13px;font-weight:700;">${password}</td>
+          </tr>` : ""}
           <tr>
-            <td style="padding:12px 16px;border-bottom:1px solid #EEF0F6;font-weight:600;color:#555;font-size:13px;">Phone</td>
-            <td style="padding:12px 16px;border-bottom:1px solid #EEF0F6;color:#1A1A2E;font-size:13px;">${vol.phone}</td>
-          </tr>
-          <tr>
-            <td style="padding:12px 16px;font-weight:600;color:#555;font-size:13px;">Interest Area</td>
-            <td style="padding:12px 16px;color:#1A1A2E;font-size:13px;">${vol.interest || "N/A"}</td>
+            <td style="padding:12px 16px;font-weight:600;color:#555;font-size:13px;">Volunteer ID</td>
+            <td style="padding:12px 16px;color:#1A1A2E;font-size:13px;">${vol.volunteerId}</td>
           </tr>
         </table>
       </td>
@@ -396,4 +393,182 @@ export const reimbursementApprovedTemplate = (memberName, amount) => {
     </tr>
   `;
   return wrap(inner, "Reimbursement Approved");
+};
+
+/**
+ * Template 6 — Volunteer notification: application rejected
+ */
+export const volunteerRejectionTemplate = (volName, reason) => {
+  const inner = `
+    <tr>
+      <td style="padding:40px 32px 40px;">
+        <div style="display:inline-block;background:#FEF2F2;color:#991B1B;padding:6px 14px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:18px;">
+          Application Update
+        </div>
+        <h2 style="margin:0;color:#1A1A2E;font-size:24px;font-weight:900;line-height:1.25;letter-spacing:-0.02em;">
+          Regarding your Volunteer Application
+        </h2>
+        <div style="margin-top:18px;color:#333;font-size:16px;line-height:1.7;">
+          <p style="margin:0 0 14px;">Dear ${volName},</p>
+          <p style="margin:0 0 14px;">
+            Thank you for your interest in volunteering with <strong>Humanity Calls Trust</strong>. 
+            We have carefully reviewed your application.
+          </p>
+          <p style="margin:0 0 14px;">
+            At this time, we are unable to proceed with your application. 
+            ${reason ? `<strong>Reason:</strong> ${reason}` : ""}
+          </p>
+          <p style="margin:0 0 14px;">
+            We appreciate your intent to contribute and encourage you to continue your noble efforts in other capacities.
+          </p>
+          <p style="margin:0 0 14px;">Warm regards,<br><strong>Team Humanity Calls</strong></p>
+        </div>
+      </td>
+    </tr>
+  `;
+  return wrap(inner, "Volunteer Application Update");
+};
+
+/**
+ * Template 7 — Volunteer notification: account banned
+ */
+export const volunteerBannedTemplate = (volName, reason) => {
+  const inner = `
+    <tr>
+      <td style="padding:40px 32px 40px;">
+        <div style="display:inline-block;background:#7F1D1D;color:#ffffff;padding:6px 14px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:18px;">
+          Account Restricted
+        </div>
+        <h2 style="margin:0;color:#1A1A2E;font-size:24px;font-weight:900;line-height:1.25;letter-spacing:-0.02em;">
+          Your Account has been Banned
+        </h2>
+        <div style="margin-top:18px;color:#333;font-size:16px;line-height:1.7;">
+          <p style="margin:0 0 14px;">Dear ${volName},</p>
+          <p style="margin:0 0 14px;">
+            We are writing to inform you that your volunteer account at <strong>Humanity Calls Trust</strong> has been banned.
+          </p>
+          <p style="margin:0 0 14px;background:#FEF2F2;padding:12px;border-left:4px solid #B91C1C;color:#B91C1C;">
+            <strong>Important:</strong> You can no longer access your account or use your volunteer login credentials.
+          </p>
+          ${reason ? `<p style="margin:0 0 14px;"><strong>Reason for Ban:</strong> ${reason}</p>` : ""}
+          <p style="margin:0 0 14px;">
+            If you believe this is a mistake, please contact the HCT Team immediately.
+          </p>
+          <p style="margin:0 0 14px;">Regards,<br><strong>Team Humanity Calls</strong></p>
+        </div>
+      </td>
+    </tr>
+  `;
+  return wrap(inner, "Account Ban Notification");
+};
+
+/**
+ * Template 8 — Volunteer notification: account moved to inactive
+ */
+export const volunteerInactiveTemplate = (volName) => {
+  const inner = `
+    <tr>
+      <td style="padding:40px 32px 40px;">
+        <div style="display:inline-block;background:#4B5563;color:#ffffff;padding:6px 14px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:18px;">
+          Status Update
+        </div>
+        <h2 style="margin:0;color:#1A1A2E;font-size:24px;font-weight:900;line-height:1.25;letter-spacing:-0.02em;">
+          Your Profile is now Inactive
+        </h2>
+        <div style="margin-top:18px;color:#333;font-size:16px;line-height:1.7;">
+          <p style="margin:0 0 14px;">Dear ${volName},</p>
+          <p style="margin:0 0 14px;">
+            Your profile status at <strong>Humanity Calls Trust</strong> has been moved to <strong>Inactive</strong>.
+          </p>
+          <p style="margin:0 0 14px;background:#F9FAFB;padding:12px;border-left:4px solid #4B5563;color:#4B5563;">
+            <strong>Notice:</strong> Your login access remains active. You can still log in to view your profile and history, though you may have limited access to active volunteer activities while in this status.
+          </p>
+          <p style="margin:0 0 14px;">
+            To reactivate your account, please reach out to our team.
+          </p>
+          <p style="margin:0 0 14px;">Regards,<br><strong>Team Humanity Calls</strong></p>
+        </div>
+      </td>
+    </tr>
+  `;
+  return wrap(inner, "Account Deactivation Notification");
+};
+
+/**
+ * Template 9 — Donation notification: thank you for donation
+ */
+export const donationThankYouTemplate = (donorName, amount) => {
+  const inner = `
+    <tr>
+      <td style="padding:40px 32px 40px;text-align:center;">
+        <div style="width:80px;height:80px;background:#FEF2F2;border-radius:50%;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;font-size:40px;line-height:80px;">
+          ❤️
+        </div>
+        <h2 style="margin:0;color:#1A1A2E;font-size:30px;font-weight:900;line-height:1.2;letter-spacing:-0.03em;">
+          Thank You for Your Donation!
+        </h2>
+        <p style="margin:20px 0 0;color:#C62828;font-size:20px;font-weight:700;">Dear ${donorName},</p>
+        <p style="color:#555;font-size:16px;line-height:1.7;margin:16px 0 0;">
+          We are deeply grateful for your generous contribution of <strong>₹${amount}</strong> to <strong>Humanity Calls Trust</strong>. 
+          Your support is vital in our mission of "Helping Humanity, Saving Lives".
+        </p>
+      </td>
+    </tr>
+
+    <!-- Message Block -->
+    <tr>
+      <td style="padding:0 32px 32px;">
+        <div style="background:#FFF9F9;border:1px solid #FFE4E4;border-radius:16px;padding:24px;text-align:center;">
+          <p style="margin:0;color:#991B1B;font-size:15px;line-height:1.6;font-weight:600;">
+            Every single donation helps us provide blood to those in need, rescue animals, and support the poor and needy. 
+            You are a hero in someone's story today!
+          </p>
+        </div>
+      </td>
+    </tr>
+
+    <!-- Closing -->
+    <tr>
+      <td style="padding:0 32px 40px;text-align:center;">
+        <p style="margin:0;color:#666;font-size:15px;line-height:1.6;">
+          An official receipt will be generated and shared with you shortly if applicable. 
+          Thank you once again for your kindness.
+        </p>
+        <div style="margin-top:32px;padding-top:24px;border-top:1px solid #EEF0F6;">
+          <p style="margin:0;font-size:14px;color:#888;">With Heartfelt Gratitude,</p>
+          <p style="margin:6px 0 0;font-weight:900;color:#C62828;font-size:18px;">Team Humanity Calls Trust</p>
+        </div>
+      </td>
+    </tr>
+  `;
+  return wrap(inner, `A Heartfelt Thank You, ${donorName}! ❤️`);
+};
+
+export const reimbursementPaidTemplate = (memberName, amount) => {
+  const inner = `
+    <tr>
+      <td style="padding:40px 32px 40px;">
+        <div style="display:inline-block;background:#E0E7FF;color:#4338CA;padding:6px 14px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:18px;">
+          Payment Successful
+        </div>
+        <h2 style="margin:0;color:#1A1A2E;font-size:24px;font-weight:900;line-height:1.25;letter-spacing:-0.02em;">
+          Your Reimbursement has been Paid!
+        </h2>
+        <div style="margin-top:18px;color:#333;font-size:16px;line-height:1.7;">
+          <p style="margin:0 0 14px;">Dear ${memberName || "Member"},</p>
+          <p style="margin:0 0 14px;">
+            Great news! Your reimbursement request for <strong> ₹${amount} </strong> has been successfully processed and the payment has been initiated/completed.
+          </p>
+          <div style="background:#F3F4F6;padding:16px;border-radius:12px;margin-bottom:14px;">
+            <p style="margin:0;color:#4B5563;font-size:13px;">
+              <strong>Note:</strong> It might take some time for the funds to reflect in your account depending on your bank's processing cycle.
+            </p>
+          </div>
+          <p style="margin:0 0 14px;">Thank you for your selfless service and dedication to the cause.</p>
+          <p style="margin:0 0 14px;">Warm regards,<br><strong>HCT Team</strong></p>
+        </div>
+      </td>
+    </tr>
+  `;
+  return wrap(inner, "Reimbursement Payment Successful");
 };

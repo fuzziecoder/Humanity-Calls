@@ -21,7 +21,7 @@ const MenuButton = ({ isOpen, toggle }) => {
   return (
     <button
       onClick={toggle}
-      className={`relative z-100 w-12 h-12 flex items-center justify-center rounded-full transition-all duration-500 ${isOpen ? 'bg-blood/5 shadow-inner' : 'bg-black/5 hover:bg-black/10'}`}
+      className={`relative z-[100] w-12 h-12 flex items-center justify-center rounded-full transition-all duration-500 ${isOpen ? 'bg-blood/5 shadow-inner' : 'bg-black/5 hover:bg-black/10'}`}
     >
       <div className="relative w-6 h-[14px] flex flex-col justify-between items-end">
         <motion.span
@@ -169,7 +169,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className="sticky top-0 z-50 bg-white border-b border-black/5 shadow-sm"
+      className="relative z-50 bg-white/90 backdrop-blur-md border-b border-black/5 shadow-[0_8px_30px_rgb(0,0,0,0.08)]"
       ref={navRef}
     >
       <div className="max-w-none mx-auto px-[5%]">
@@ -208,48 +208,10 @@ const Navbar = () => {
                   Home
                 </span>
                 {isActive("/") && (
-                  <motion.span
-                    layoutId="nav-pill"
-                    className="absolute inset-x-2 bottom-[-10px] h-1 bg-blood rounded-t-full"
-                  />
-                )}
-              </Link>
-
-              <Link to="/our-team" className="relative px-5 py-2 group/nav">
-                <span
-                  className={`relative z-10 text-[13px] font-bold tracking-tight transition-colors duration-300 ${
-                    isActive("/our-team")
-                      ? "text-blood"
-                      : "text-black/60 group-hover/nav:text-blood"
-                  }`}
-                  style={{ fontFamily: '"Syne", sans-serif' }}
-                >
-                  Our Team
-                </span>
-                {isActive("/our-team") && (
-                  <motion.span
-                    layoutId="nav-pill"
-                    className="absolute inset-x-2 bottom-[-10px] h-1 bg-blood rounded-t-full"
-                  />
-                )}
-              </Link>
-
-              <Link to="/blood" className="relative px-5 py-2 group/nav">
-                <span
-                  className={`relative z-10 text-[13px] font-bold tracking-tight transition-colors duration-300 ${
-                    isActive("/blood")
-                      ? "text-blood"
-                      : "text-black/60 group-hover/nav:text-blood"
-                  }`}
-                  style={{ fontFamily: '"Syne", sans-serif' }}
-                >
-                  Donate Blood
-                </span>
-                {isActive("/blood") && (
-                  <motion.span
-                    layoutId="nav-pill"
-                    className="absolute inset-x-2 bottom-[-10px] h-1 bg-blood rounded-t-full"
-                  />
+                    <motion.span
+                      layoutId="nav-pill"
+                      className="absolute inset-x-2 bottom-0 h-1 bg-blood rounded-t-full"
+                    />
                 )}
               </Link>
 
@@ -285,7 +247,7 @@ const Navbar = () => {
                       className="absolute inset-0 bg-purple-600 z-0 origin-center"
                     />
 
-                    <span className="relative z-10">Login / Join</span>
+                    <span className="relative z-10">Volunteer Login</span>
 
                     <motion.div
                       variants={{
@@ -334,7 +296,7 @@ const Navbar = () => {
       {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-[60] bg-white overflow-hidden lg:hidden">
+          <div className="fixed inset-0 z-[90] bg-white overflow-hidden lg:hidden">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -365,33 +327,11 @@ const Navbar = () => {
                 <div className="flex flex-col">
                   <Link
                     to="/"
-                    className={`text-4xl font-black uppercase tracking-tighter py-6 border-b border-black/5 ${isActive("/") ? "text-blood" : "text-black/10"}`}
+                    className={`text-2xl font-black uppercase tracking-tighter py-4 border-b border-black/5 ${isActive("/") ? "text-blood" : "text-black/10"}`}
                     onClick={() => setIsOpen(false)}
                     style={{ fontFamily: '"Syne", sans-serif' }}
                   >
                     Home
-                  </Link>
-
-                  <Link
-                    to="/our-team"
-                    className={`text-4xl font-black uppercase tracking-tighter py-6 border-b border-black/5 ${
-                      isActive("/our-team") ? "text-blood" : "text-black/10"
-                    }`}
-                    onClick={() => setIsOpen(false)}
-                    style={{ fontFamily: '"Syne", sans-serif' }}
-                  >
-                    Our Team
-                  </Link>
-
-                  <Link
-                    to="/blood"
-                    className={`text-4xl font-black uppercase tracking-tighter py-6 border-b border-black/5 ${
-                      isActive("/blood") ? "text-blood" : "text-black/10"
-                    }`}
-                    onClick={() => setIsOpen(false)}
-                    style={{ fontFamily: '"Syne", sans-serif' }}
-                  >
-                    Donate Blood
                   </Link>
 
                   {navigation.map((group) => (
@@ -416,11 +356,11 @@ const Navbar = () => {
                           className="w-full py-4 text-[10px] font-black tracking-widest uppercase rounded-2xl border border-black/10 bg-white text-black hover:bg-black/5 transition-all"
                           style={{ fontFamily: '"Syne", sans-serif' }}
                         >
-                          Login
+                          Volunteer Login
                         </button>
                       </Link>
                       <Link
-                        to="/become-a-member?mode=signup"
+                        to="/volunteer"
                         onClick={() => setIsOpen(false)}
                         className="block"
                       >
@@ -428,7 +368,7 @@ const Navbar = () => {
                           className="w-full py-4 text-[10px] font-black tracking-widest uppercase rounded-2xl bg-black text-white shadow-lg shadow-black/10 hover:bg-black/90 transition-all"
                           style={{ fontFamily: '"Syne", sans-serif' }}
                         >
-                          Sign Up
+                          Apply as Volunteer
                         </button>
                       </Link>
                     </>
@@ -491,7 +431,7 @@ const DropdownNavItem = ({ title, links, isActive, isMega, accent }) => {
         {isActive && (
           <motion.span
             layoutId="nav-pill"
-            className="absolute inset-x-2 bottom-[-10px] h-1 bg-blood rounded-t-full"
+            className="absolute inset-x-2 bottom-0 h-1 bg-blood rounded-t-full"
           />
         )}
       </button>
@@ -571,7 +511,7 @@ const MobileNavItem = ({ group, closeMenu, pathname }) => {
     <div className="flex flex-col">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between py-6 text-4xl font-black uppercase tracking-tighter border-b border-black/5 text-left transition-colors ${
+        className={`flex items-center justify-between py-4 text-2xl font-black uppercase tracking-tighter border-b border-black/5 text-left transition-colors ${
           isOpen || isGroupActive ? "" : "text-black/10"
         }`}
         style={{
@@ -602,7 +542,7 @@ const MobileNavItem = ({ group, closeMenu, pathname }) => {
                     if (link.onClick) link.onClick();
                     closeMenu();
                   }}
-                  className={`text-xl font-bold tracking-tight hover:opacity-80 ${
+                  className={`text-lg font-bold tracking-tight hover:opacity-80 ${
                     pathname === link.href ? "opacity-100" : "opacity-30"
                   }`}
                   style={{

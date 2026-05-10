@@ -2,7 +2,7 @@ import express from "express";
 import { sendEmail, sendMassEmail, getMassMailHistory, getAllPotentialRecipients } from "../controllers/emailController.js";
 import { checkAndSendBirthdayEmails } from "../utils/birthdayCron.js";
 import rateLimit from "express-rate-limit";
-import { protect } from "../middleware/auth.js";
+import { protect, optionalProtect } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -34,7 +34,7 @@ const contactEmailLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-router.post("/send-email", protect, contactEmailLimiter, sendEmail);
+router.post("/send-email", optionalProtect, contactEmailLimiter, sendEmail);
 
 // Test route to manually trigger birthday checks (Only for admin or internal use)
 router.get("/test-birthday-emails", protect, async (req, res) => {

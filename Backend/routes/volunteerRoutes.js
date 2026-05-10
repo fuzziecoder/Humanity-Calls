@@ -13,7 +13,7 @@ import {
   getActiveVolunteerCount,
 } from "../controllers/volunteerController.js";
 import { uploadFileOnly } from "../controllers/galleryController.js";
-import { protect, adminOnly } from "../middleware/auth.js";
+import { protect, adminOnly, optionalProtect } from "../middleware/auth.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -54,11 +54,11 @@ const upload = multer({
   }
 });
 
-router.post("/apply", protect, applyVolunteer);
+router.post("/apply", optionalProtect, applyVolunteer);
 router.get("/my-status", protect, getMyVolunteerStatus);
 router.patch("/my-profile-picture", protect, updateMyProfilePicture);
 router.get("/count", getActiveVolunteerCount);
-router.post("/upload", protect, (req, res, next) => {
+router.post("/upload", optionalProtect, (req, res, next) => {
   upload.single("image")(req, res, (err) => {
     if (err) {
       console.error("Multer error:", err.message);

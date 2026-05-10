@@ -3,6 +3,9 @@ import { triggerEmail } from "../controllers/emailController.js";
 import {
   volunteerApplicationReceivedTemplate,
   volunteerApprovalTemplate,
+  volunteerRejectionTemplate,
+  volunteerBannedTemplate,
+  volunteerInactiveTemplate,
   activeToTemporaryTemplate,
   temporaryToInactiveTemplate,
   temporaryToActiveTemplate,
@@ -34,14 +37,12 @@ export const applyVolunteer = async (req, res) => {
       profilePicture,
     } = req.body;
 
-    const user = await import("../models/User.js").then(m => m.default).then(User => User.findById(req.user.id));
-    if (!user || user.isVerified !== true) {
-      return res.status(403).json({
-        message: "You must verify your email address before applying to volunteer.",
-      });
-    }
+    // Public submission: No user check required here anymore.
+    // If a user is logged in, we link it, otherwise it stays null until approval.
+    const userId = req.user ? req.user.id : null;
 
-    const existingVolunteer = await Volunteer.findOne({ user: req.user.id });
+    const normalizedEmail = email.toLowerCase().trim();
+    const existingVolunteer = await Volunteer.findOne({ email: normalizedEmail });
     if (phone === emergencyContact) {
       return res.status(400).json({
         message: "Phone number and emergency contact cannot be the same.",
@@ -58,9 +59,9 @@ export const applyVolunteer = async (req, res) => {
     }
 
     const newVolunteer = new Volunteer({
-      user: req.user.id,
+      user: userId,
       fullName,
-      email,
+      email: normalizedEmail,
       phone,
       emergencyContact,
       gender,
@@ -195,12 +196,43 @@ export const updateVolunteerStatus = async (req, res) => {
     const volunteer = await Volunteer.findByIdAndUpdate(id, updateData, { new: true });
 
     // Fire-and-forget: notify volunteer on first-time approval (pending -> active/temporary)
-    // Do NOT send this for temporary<->active transitions, since we have custom templates for those.
     if (
-      previous.status === "pending" &&
-      (status === "active" || status === "temporary") &&
+      (previous.status === "pending" || previous.status === "banned") &&
+      ["active", "temporary", "inactive"].includes(status) &&
       volunteer.email
     ) {
+      // ── Create or Update User Account on Approval ──
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+      let generatedPassword = "";
+      for (let i = 0; i < 16; i++) {
+        generatedPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      const User = await import("../models/User.js").then((m) => m.default);
+      const bcrypt = await import("bcryptjs").then((m) => m.default);
+      const hashedPassword = await bcrypt.hash(generatedPassword, 12);
+
+      let user = await User.findOne({ email: volunteer.email });
+
+      if (!user) {
+        user = new User({
+          name: volunteer.fullName,
+          email: volunteer.email,
+          password: hashedPassword,
+          role: "user",
+          isVerified: true,
+        });
+      } else {
+        // If user already exists, update their password so they can login with the new one sent in the mail
+        user.password = hashedPassword;
+        user.isVerified = true; // Ensure they are verified
+      }
+      await user.save();
+
+      // Link the user to the volunteer record
+      volunteer.user = user._id;
+      await volunteer.save();
+
       const senderEmail = process.env.BREVO_SENDER_EMAIL;
       const senderName = process.env.BREVO_SENDER_NAME || "Humanity Calls";
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -210,9 +242,52 @@ export const updateVolunteerStatus = async (req, res) => {
           sender: { name: senderName, email: senderEmail },
           to: [{ email: volunteer.email, name: volunteer.fullName }],
           subject: `🎉 Congratulations! You're Approved as a Humanity Calls Volunteer`,
-          htmlContent: volunteerApprovalTemplate(volunteer, frontendUrl),
+          htmlContent: volunteerApprovalTemplate(volunteer, frontendUrl, generatedPassword),
         }).catch((err) =>
           console.error("Volunteer approval email failed:", err.message)
+        );
+      }
+    }
+
+    // Handle Rejection Email
+    if (previous.status === "pending" && status === "rejected" && volunteer.email) {
+      const senderEmail = process.env.BREVO_SENDER_EMAIL;
+      const senderName = process.env.BREVO_SENDER_NAME || "Humanity Calls";
+
+      if (senderEmail && process.env.BREVO_API_KEY) {
+        triggerEmail({
+          sender: { name: senderName, email: senderEmail },
+          to: [{ email: volunteer.email, name: volunteer.fullName }],
+          subject: `Volunteer Application Update — Humanity Calls`,
+          htmlContent: volunteerRejectionTemplate(volunteer.fullName, reason),
+        }).catch((err) =>
+          console.error("Volunteer rejection email failed:", err.message)
+        );
+      }
+    }
+
+    // Handle Ban/Inactive Emails (when moving from Active/Temp)
+    if (
+      (previous.status === "active" || previous.status === "temporary") &&
+      (status === "banned" || status === "inactive") &&
+      volunteer.email
+    ) {
+      const senderEmail = process.env.BREVO_SENDER_EMAIL;
+      const senderName = process.env.BREVO_SENDER_NAME || "Humanity Calls";
+
+      if (senderEmail && process.env.BREVO_API_KEY) {
+        const emailSubject = status === "banned" ? "Account Restricted — Humanity Calls" : "Profile Inactive — Humanity Calls";
+        const emailHtml = status === "banned" 
+          ? volunteerBannedTemplate(volunteer.fullName, reason) 
+          : volunteerInactiveTemplate(volunteer.fullName);
+
+        triggerEmail({
+          sender: { name: senderName, email: senderEmail },
+          to: [{ email: volunteer.email, name: volunteer.fullName }],
+          subject: emailSubject,
+          htmlContent: emailHtml,
+        }).catch((err) =>
+          console.error(`${status} notification email failed:`, err.message)
         );
       }
     }

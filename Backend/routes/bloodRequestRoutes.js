@@ -9,7 +9,7 @@ import {
 
 const router = express.Router();
 
-router.post("/", protect, createBloodRequest);
+router.post("/", createBloodRequest);
 router.get("/", protect, adminOnly, listBloodRequests);
 router.put("/:id/status", protect, adminOnly, updateBloodRequestStatus);
 router.delete("/:id", protect, adminOnly, deleteBloodRequest);

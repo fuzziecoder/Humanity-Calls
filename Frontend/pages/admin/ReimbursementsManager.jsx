@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FaMoneyCheckAlt, FaSearch, FaCheck, FaTimes } from "react-icons/fa";
+import { FaMoneyCheckAlt, FaSearch, FaCheck, FaTimes, FaWallet, FaExclamationTriangle } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 
 const ReimbursementsManager = () => {
@@ -9,7 +10,10 @@ const ReimbursementsManager = () => {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState("pending");
   const [commentDraft, setCommentDraft] = useState({});
+  const [payConfirm, setPayConfirm] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchItems = async () => {
     setIsLoading(true);
@@ -33,23 +37,48 @@ const ReimbursementsManager = () => {
   }, []);
 
   const filtered = useMemo(() => {
+    let result = items;
+
+    // Apply status filter
+    if (filter !== "all") {
+      result = result.filter((i) => i.status === filter);
+    }
+
+    // Apply text search
     const q = searchQuery.toLowerCase().trim();
-    if (!q) return items;
-    return items.filter((i) => JSON.stringify(i).toLowerCase().includes(q));
-  }, [items, searchQuery]);
+    if (q) {
+      result = result.filter((i) => JSON.stringify(i).toLowerCase().includes(q));
+    }
+
+    return result;
+  }, [items, searchQuery, filter]);
 
   const totals = useMemo(() => {
-    const totalRequested = items.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+    const totalPaid = items
+      .filter((row) => row.status === "paid")
+      .reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
     const totalApproved = items
-      .filter((row) => row.status === "approved" || row.status === "paid")
+      .filter((row) => row.status === "approved")
       .reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
     const totalPending = items
       .filter((row) => row.status === "pending")
       .reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
-    return { totalRequested, totalApproved, totalPending };
+    const totalRejected = items
+      .filter((row) => row.status === "rejected")
+      .reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+    return { totalPaid, totalApproved, totalPending, totalRejected };
   }, [items]);
 
+  const counts = useMemo(() => ({
+    all: items.length,
+    pending: items.filter(i => i.status === "pending").length,
+    approved: items.filter(i => i.status === "approved").length,
+    paid: items.filter(i => i.status === "paid").length,
+    rejected: items.filter(i => i.status === "rejected").length,
+  }), [items]);
+
   const updateStatus = async (id, status) => {
+    setIsUpdating(true);
     try {
       const token = sessionStorage.getItem("adminToken");
       const adminComment = commentDraft[id] || "";
@@ -58,10 +87,13 @@ const ReimbursementsManager = () => {
         { status, adminComment },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      toast.success("Updated");
+      toast.success(`Marked as ${status}`);
+      setPayConfirm(null);
       fetchItems();
     } catch (_err) {
-      toast.error("Failed to update");
+      toast.error("Failed to update status");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -85,10 +117,10 @@ const ReimbursementsManager = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-          <div className="rounded-xl border border-border p-4 bg-bg/40">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-text-body/40">Total Requested</p>
-            <p className="text-2xl font-black text-primary mt-1">₹{totals.totalRequested.toLocaleString("en-IN")}</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+          <div className="rounded-xl border border-indigo-200 p-4 bg-indigo-50">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-indigo-700/70">Total Paid</p>
+            <p className="text-2xl font-black text-indigo-700 mt-1">₹{totals.totalPaid.toLocaleString("en-IN")}</p>
           </div>
           <div className="rounded-xl border border-green-200 p-4 bg-green-50">
             <p className="text-[10px] font-black uppercase tracking-[0.22em] text-green-700/70">Total Approved</p>
@@ -98,6 +130,26 @@ const ReimbursementsManager = () => {
             <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-700/70">Pending Amount</p>
             <p className="text-2xl font-black text-amber-700 mt-1">₹{totals.totalPending.toLocaleString("en-IN")}</p>
           </div>
+          <div className="rounded-xl border border-red-200 p-4 bg-red-50">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-red-700/70">Total Rejected</p>
+            <p className="text-2xl font-black text-red-700 mt-1">₹{totals.totalRejected.toLocaleString("en-IN")}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-6">
+          {["pending", "approved", "paid", "rejected"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setFilter(tab)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border ${
+                filter === tab
+                  ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                  : "bg-white text-text-body/40 hover:bg-slate-50 border-slate-100"
+              }`}
+            >
+              {tab} ({counts[tab]})
+            </button>
+          ))}
         </div>
 
         {isLoading ? (
@@ -142,7 +194,16 @@ const ReimbursementsManager = () => {
                         <span className="text-[11px] text-text-body/30 italic">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-4 font-bold uppercase text-[11px]">{i.status}</td>
+                    <td className="px-4 py-4 font-bold uppercase text-[11px]">
+                      <span className={`px-2.5 py-1 rounded-full ${
+                        i.status === "paid" ? "bg-indigo-100 text-indigo-700" :
+                        i.status === "approved" ? "bg-green-100 text-green-700" :
+                        i.status === "rejected" ? "bg-red-100 text-red-700" :
+                        "bg-amber-100 text-amber-700"
+                      }`}>
+                        {i.status}
+                      </span>
+                    </td>
                     <td className="px-4 py-4 min-w-[260px]">
                       <textarea
                         rows={2}
@@ -154,18 +215,51 @@ const ReimbursementsManager = () => {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex justify-center gap-2">
-                        <button
-                          onClick={() => updateStatus(i._id, "approved")}
-                          className="px-3 py-2 rounded-lg bg-green-600 text-white font-black text-[11px] flex items-center gap-2"
-                        >
-                          <FaCheck /> Approve
-                        </button>
-                        <button
-                          onClick={() => updateStatus(i._id, "rejected")}
-                          className="px-3 py-2 rounded-lg bg-blood text-white font-black text-[11px] flex items-center gap-2"
-                        >
-                          <FaTimes /> Reject
-                        </button>
+                        {i.status === "pending" && (
+                          <>
+                            <button
+                              onClick={() => updateStatus(i._id, "approved")}
+                              className="px-3 py-2 rounded-lg bg-green-600 text-white font-black text-[11px] flex items-center gap-2 transition-all hover:bg-green-700"
+                            >
+                              <FaCheck /> Approve
+                            </button>
+                            <button
+                              onClick={() => updateStatus(i._id, "rejected")}
+                              className="px-3 py-2 rounded-lg bg-blood text-white font-black text-[11px] flex items-center gap-2 transition-all hover:bg-red-700"
+                            >
+                              <FaTimes /> Reject
+                            </button>
+                          </>
+                        )}
+                        {i.status === "approved" && (
+                          <>
+                            <button
+                              onClick={() => setPayConfirm(i)}
+                              className="px-3 py-2 rounded-lg bg-indigo-600 text-white font-black text-[11px] flex items-center gap-2 transition-all hover:bg-indigo-700"
+                            >
+                              <FaWallet /> Mark as Paid
+                            </button>
+                            <button
+                              onClick={() => updateStatus(i._id, "rejected")}
+                              className="px-3 py-2 rounded-lg bg-blood text-white font-black text-[11px] flex items-center gap-2 transition-all hover:bg-red-700"
+                            >
+                              <FaTimes /> Reject
+                            </button>
+                          </>
+                        )}
+                        {i.status === "rejected" && (
+                          <button
+                            onClick={() => updateStatus(i._id, "approved")}
+                            className="px-3 py-2 rounded-lg bg-green-600 text-white font-black text-[11px] flex items-center gap-2 transition-all hover:bg-green-700"
+                          >
+                            <FaCheck /> Approve
+                          </button>
+                        )}
+                        {i.status === "paid" && (
+                          <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
+                            Payment Completed
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -177,6 +271,45 @@ const ReimbursementsManager = () => {
           <div className="py-20 text-center text-text-body/60 font-bold">No reimbursement requests</div>
         )}
       </div>
+
+      {/* Mark as Paid Confirmation */}
+      <AnimatePresence>
+        {payConfirm && (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-[2.5rem] p-8 md:p-12 max-w-md w-full text-center shadow-2xl"
+            >
+              <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FaWallet size={32} />
+              </div>
+              <h3 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">Confirm Payment?</h3>
+              <p className="text-text-body/60 font-medium mb-8 leading-relaxed">
+                You are marking the reimbursement for <strong className="text-gray-900">₹{payConfirm.amount}</strong> as successfully paid. This action <span className="text-red-500 font-bold uppercase tracking-widest text-[10px]">cannot be undone</span>.
+              </p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setPayConfirm(null)}
+                  disabled={isUpdating}
+                  className="py-4 rounded-2xl bg-bg text-text-body font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => updateStatus(payConfirm._id, "paid")}
+                  disabled={isUpdating}
+                  className="py-4 rounded-2xl bg-indigo-600 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                >
+                  {isUpdating ? <><div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> Confirming...</> : "Mark as Paid"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

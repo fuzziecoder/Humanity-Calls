@@ -37,9 +37,9 @@ const PrimaryCTA = ({ children, to, delay = 0, className = "", accentColor = "#E
       transition={{ duration: 0.7, delay, ease: [0.76, 0, 0.24, 1] }}
       className={className}
     >
-      <Link to={to} className="group relative inline-block">
+      <Link to={to} className={`group relative flex sm:inline-flex w-full sm:w-auto`}>
         <span
-          className="relative z-10 inline-flex items-center gap-2.5 rounded-full px-9 py-[18px] md:px-11 md:py-[22px] font-medium text-[15px] md:text-base overflow-hidden transition-colors duration-300 ease-smooth group-hover:text-white shadow-xl shadow-black/5"
+          className="relative z-10 flex sm:inline-flex items-center justify-center gap-2.5 rounded-full px-9 py-[18px] md:px-11 md:py-[22px] font-medium text-[15px] md:text-base overflow-hidden transition-colors duration-300 ease-smooth group-hover:text-white shadow-xl shadow-black/5 w-full"
           style={{
             backgroundColor: "#FFFFFF",
             color: "#1A1A1A",

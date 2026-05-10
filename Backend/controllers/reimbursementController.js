@@ -1,7 +1,7 @@
 import ReimbursementRequest from "../models/ReimbursementRequest.js";
 import Volunteer from "../models/Volunteer.js";
 import { triggerEmail } from "./emailController.js";
-import { reimbursementApprovedTemplate } from "../utils/emailTemplates.js";
+import { reimbursementApprovedTemplate, reimbursementPaidTemplate } from "../utils/emailTemplates.js";
 
 export const createReimbursementRequest = async (req, res) => {
   try {
@@ -86,15 +86,20 @@ export const updateReimbursementStatus = async (req, res) => {
     if (!updated) return res.status(404).json({ message: "Request not found" });
 
     // Email volunteer on approval (requested)
-    if (status === "approved" && updated.user?.email && process.env.BREVO_API_KEY) {
+    // Email volunteer on status change
+    if ((status === "approved" || status === "paid") && updated.user?.email && process.env.BREVO_API_KEY) {
       const senderEmail = process.env.BREVO_SENDER_EMAIL;
       const senderName = process.env.BREVO_SENDER_NAME || "Humanity Calls";
       if (senderEmail) {
+        const template = status === "approved" 
+          ? reimbursementApprovedTemplate(updated.user.name, updated.amount)
+          : reimbursementPaidTemplate(updated.user.name, updated.amount);
+
         triggerEmail({
           sender: { name: senderName, email: senderEmail },
           to: [{ email: updated.user.email, name: updated.user.name }],
-          subject: `Reimbursement Approved — ₹${updated.amount}`,
-          htmlContent: reimbursementApprovedTemplate(updated.user.name, updated.amount),
+          subject: status === "approved" ? `Reimbursement Approved — ₹${updated.amount}` : `Reimbursement Paid — ₹${updated.amount}`,
+          htmlContent: template,
         }).catch(() => null);
       }
     }

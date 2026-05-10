@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import gsap from "gsap";
 import Button from "./Button";
 import cortexLogo from "../assets/cortexlogo.png";
+import hclogo from "../assets/humanitycallslogo.avif";
 import { SOCIAL_LINKS, WHATSAPP_NUMBER } from "../constants";
 import { animateFooterElements } from "../utils/animations";
 
@@ -24,8 +25,29 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[#080808] text-white pt-32 pb-12 overflow-hidden border-t border-white/5" ref={footerRef}>
+    <footer className="bg-[#080808] text-white pt-24 pb-12 overflow-hidden border-t border-white/5" ref={footerRef}>
       <div className="max-w-none mx-auto px-[5%]">
+        {/* Top Logo Section */}
+        <div className="mb-20">
+          <Link to="/" className="flex items-center space-x-3 outline-none w-fit">
+            <img
+              src={hclogo}
+              width="45"
+              height="45"
+              className="w-[45px] h-[45px] object-contain"
+              alt="Humanity Calls logo"
+            />
+            <div className="flex flex-col">
+              <span
+                className="text-xl font-black text-blood leading-none"
+                style={{ fontFamily: '"Poppins", sans-serif' }}
+              >
+                Humanity Calls
+              </span>
+            </div>
+          </Link>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-24 mb-24">
           
           {/* Column 1: Company */}
@@ -97,7 +119,7 @@ const Footer = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-6">
+            <div className="flex items-center gap-4 sm:gap-6 flex-nowrap overflow-x-auto sm:overflow-visible pb-2 sm:pb-0 scrollbar-hide">
               {SOCIAL_LINKS.map((social) => {
                 const platformColors = {
                   Facebook: "#1877F2",

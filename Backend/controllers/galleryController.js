@@ -32,6 +32,7 @@ export const uploadImage = async (req, res) => {
     const { projectId, eventDate } = req.body;
     
     if (!req.file) {
+      console.warn("Upload attempt with no file");
       return res.status(400).json({ message: "No image uploaded" });
     }
 
@@ -43,9 +44,11 @@ export const uploadImage = async (req, res) => {
     });
 
     await newImage.save();
+    console.log("Gallery image saved successfully:", newImage._id);
     res.status(201).json(newImage);
   } catch (error) {
-    res.status(500).json({ message: "Upload failed" });
+    console.error("Gallery controller save error:", error);
+    res.status(500).json({ message: "Database save failed", error: error.message });
   }
 };
 

@@ -10,6 +10,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserProvider } from "./context/UserContext";
 import Navbar from "./components/Navbar";
+import TopBar from "./components/TopBar";
 import ContactFloatingButton from "./components/WhatsAppButton";
 import SmoothScroll from "./components/SmoothScroll";
 import Home from "./pages/Home";
@@ -46,6 +47,8 @@ const AddGalleryManager = lazy(() => import("./pages/admin/AddGalleryManager"));
 const FormImagesManager = lazy(() => import("./pages/admin/FormImagesManager"));
 const BloodRequestsManager = lazy(() => import("./pages/admin/BloodRequestsManager"));
 const ReimbursementsManager = lazy(() => import("./pages/admin/ReimbursementsManager"));
+const DonationsManager = lazy(() => import("./pages/admin/DonationsManager"));
+const FeedbackManager = lazy(() => import("./pages/admin/FeedbackManager"));
 const Verify = lazy(() => import("./pages/Verify"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -99,7 +102,12 @@ const AppContent = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {!isAdminPage && <Navbar />}
+      {!isAdminPage && (
+        <div className="sticky top-0 z-[1000]">
+          <TopBar />
+          <Navbar />
+        </div>
+      )}
       <main className="flex-grow">
         <Suspense fallback={<PageLoader />}>
           <Routes>
@@ -131,9 +139,11 @@ const AppContent = () => {
               <Route path="forms" element={<FormsManager />} />
               <Route path="blood-requests" element={<BloodRequestsManager />} />
               <Route path="reimbursements" element={<ReimbursementsManager />} />
+              <Route path="donations" element={<DonationsManager />} />
               <Route path="send-mails" element={<EmailManager />} />
               <Route path="add-gallery" element={<AddGalleryManager />} />
               <Route path="form-images" element={<FormImagesManager />} />
+              <Route path="feedback" element={<FeedbackManager />} />
             </Route>
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />

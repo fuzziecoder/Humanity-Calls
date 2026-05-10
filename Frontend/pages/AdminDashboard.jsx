@@ -13,6 +13,8 @@ import {
   FaPlusCircle,
   FaShieldAlt,
   FaImage,
+  FaCommentDots,
+  FaHeart,
 } from "react-icons/fa";
 import hclogo from "../assets/humanitycallslogo.avif";
 import axios from "axios";
@@ -29,6 +31,8 @@ const NAV_COLORS = {
   "form-images":{ bg: "bg-blue-500",    text: "text-blue-500",     light: "bg-blue-50",      ring: "ring-blue-200"    },
   gallery:     { bg: "bg-teal-500",     text: "text-teal-500",     light: "bg-teal-50",     ring: "ring-teal-200"    },
   "add-gallery":{ bg: "bg-pink-500",   text: "text-pink-500",     light: "bg-pink-50",     ring: "ring-pink-200"    },
+  feedback:     { bg: "bg-yellow-500",  text: "text-yellow-600",   light: "bg-yellow-50",   ring: "ring-yellow-200"  },
+  donations:    { bg: "bg-rose-500",    text: "text-rose-500",     light: "bg-rose-50",     ring: "ring-rose-200"    },
 };
 
 const AdminDashboard = () => {
@@ -38,6 +42,8 @@ const AdminDashboard = () => {
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [openBloodRequestsCount, setOpenBloodRequestsCount] = useState(0);
   const [pendingReimbursementsCount, setPendingReimbursementsCount] = useState(0);
+  const [pendingDonationsCount, setPendingDonationsCount] = useState(0);
+  const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
 
   useEffect(() => {
     const token = sessionStorage.getItem("adminToken");
@@ -52,16 +58,24 @@ const AdminDashboard = () => {
     try {
       const token = sessionStorage.getItem("adminToken");
       const headers = { Authorization: `Bearer ${token}` };
-      const [volunteerRes, bloodRes, reimbRes] = await Promise.all([
+      const [volunteerRes, bloodRes, reimbRes, donationRes, feedbackRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_URL}/volunteers?status=pending`, { headers }),
         axios.get(`${import.meta.env.VITE_API_URL}/blood-requests?status=open`, { headers }),
         axios.get(`${import.meta.env.VITE_API_URL}/reimbursements`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_URL}/donations`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_URL}/feedback`, { headers }),
       ]);
 
       setPendingRequestsCount(volunteerRes.data.length);
       setOpenBloodRequestsCount(bloodRes.data.length);
       setPendingReimbursementsCount(
         (reimbRes.data || []).filter((r) => r.status === "pending").length,
+      );
+      setPendingDonationsCount(
+        (donationRes.data || []).filter((d) => d.status === "pending").length,
+      );
+      setPendingFeedbackCount(
+        (feedbackRes.data || []).filter((f) => f.status === "pending").length,
       );
     } catch (err) {
       console.error("Failed to fetch pending count", err);
@@ -81,9 +95,11 @@ const AdminDashboard = () => {
     { id: "forms",        label: "Forms",             icon: <FaClipboardList /> },
     { id: "blood-requests", label: "Blood Requests",  icon: <FaTint />, badge: openBloodRequestsCount },
     { id: "reimbursements", label: "Reimbursements",  icon: <FaMoneyCheckAlt />, badge: pendingReimbursementsCount },
+    { id: "donations",      label: "Donations",       icon: <FaHeart />,         badge: pendingDonationsCount },
     { id: "form-images",  label: "Form Images",       icon: <FaImage />        },
     { id: "gallery",      label: "Gallery",           icon: <FaImages />       },
     { id: "add-gallery",  label: "Add Gallery",       icon: <FaPlusCircle />   },
+    { id: "feedback",      label: "Feedback",           icon: <FaCommentDots />,  badge: pendingFeedbackCount },
   ];
 
   return (
@@ -143,11 +159,11 @@ const AdminDashboard = () => {
             fixed top-0 left-0 h-full w-72 bg-[#1E1F2E] z-[100] transform transition-transform duration-300 ease-in-out
             flex flex-col shadow-2xl
             ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-            lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:shrink-0
+            lg:translate-x-0 lg:sticky lg:top-[61px] lg:h-[calc(100vh-61px)] lg:w-56 lg:shrink-0
           `}
         >
           {/* Sidebar Header */}
-          <div className="px-6 py-6 flex items-center justify-between border-b border-white/5">
+          <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
                 <FaShieldAlt size={14} className="text-white/80" />
@@ -166,8 +182,8 @@ const AdminDashboard = () => {
           </div>
 
           {/* Nav Links */}
-          <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] px-3 mb-3">Navigation</p>
+          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] px-3 mb-2">Navigation</p>
             {menuItems.map((item) => {
               const colors = NAV_COLORS[item.id] || {};
               return (
@@ -177,7 +193,7 @@ const AdminDashboard = () => {
                   onClick={() => setIsMobileSidebarOpen(false)}
                   title={item.label}
                   className={({ isActive }) =>
-                    `group relative flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200
+                    `group relative flex items-center gap-2.5 px-3.5 py-2 rounded-xl font-semibold transition-all duration-200
                     ${isActive
                       ? `${colors.light} ${colors.text} shadow-sm ring-1 ${colors.ring}`
                       : "text-white/50 hover:text-white hover:bg-white/8"
@@ -187,10 +203,13 @@ const AdminDashboard = () => {
                   {({ isActive }) => (
                     <>
                       <span
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 transition-all
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 transition-all relative
                         ${isActive ? `${colors.bg} text-white shadow-lg` : "bg-white/8 text-white/50 group-hover:bg-white/15 group-hover:text-white"}`}
                       >
                         {item.icon}
+                        {item.badge > 0 && (
+                          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-[#1E1F2E] rounded-full animate-pulse" />
+                        )}
                       </span>
                       <span className="text-sm whitespace-nowrap flex-1">{item.label}</span>
                       {item.badge > 0 && (
@@ -209,12 +228,12 @@ const AdminDashboard = () => {
           </nav>
 
           {/* Logout */}
-          <div className="p-4 border-t border-white/5">
+          <div className="p-3 border-t border-white/5">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 font-semibold text-sm transition-all duration-200 group"
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 font-semibold text-xs transition-all duration-200 group"
             >
-              <span className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0 group-hover:bg-red-500/20 transition-colors">
+              <span className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0 group-hover:bg-red-500/20 transition-colors">
                 <FaSignOutAlt size={14} />
               </span>
               <span>Sign Out</span>

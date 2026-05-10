@@ -94,7 +94,6 @@ const Collaborate = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
     setLoading(true);
     
     const success = await sendEmail(

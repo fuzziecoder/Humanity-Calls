@@ -4,6 +4,7 @@ import { useTranslation, Trans } from "react-i18next";
 import { motion, useScroll, useTransform } from "framer-motion";
 import HeroCarousel from "./HeroCarousel";
 import PrimaryCTA, { LayerHoverStyle } from "./Common/PrimaryCTA";
+import hclogo from "../assets/humanitycallslogo.avif";
 
 /* ═══════════════════════════════════════════════════════════════
    MULTILAYER CTA BUTTON
@@ -14,16 +15,17 @@ import PrimaryCTA, { LayerHoverStyle } from "./Common/PrimaryCTA";
 /* ═══════════════════════════════════════════════════════════════
    SECONDARY CTA — Ghost button with subtle glow hover
    ═══════════════════════════════════════════════════════════════ */
-const SecondaryCTA = ({ children, to, delay = 0 }) => {
+const SecondaryCTA = ({ children, to, delay = 0, className = "" }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, delay, ease: [0.76, 0, 0.24, 1] }}
+      className={className}
     >
       <Link
         to={to}
-        className="group/sec relative inline-flex items-center gap-2 rounded-full border-2 border-white/25 px-9 py-[18px] md:px-11 md:py-[22px] text-white font-medium text-[15px] md:text-base overflow-hidden transition-all duration-500 ease-smooth hover:border-white/50 hover:shadow-[0_0_30px_rgba(215,238,221,0.12)]"
+        className="group/sec relative flex sm:inline-flex justify-center items-center gap-2 rounded-full border-2 border-white/25 px-9 py-[18px] md:px-11 md:py-[22px] text-white font-medium text-[15px] md:text-base overflow-hidden transition-all duration-500 ease-smooth hover:border-white/50 hover:shadow-[0_0_30px_rgba(215,238,221,0.12)] w-full"
         style={{
           fontFamily: '"Poppins", sans-serif',
           fontWeight: 500,
@@ -218,11 +220,11 @@ const HeroSection = () => {
 
       {/* ── Main Content ── */}
       <motion.div
-        className="relative z-10 w-full max-w-[1440px] mx-auto px-6 sm:px-8 md:px-[8%] lg:px-[10%] py-12 md:py-28 lg:py-32"
+        className="relative z-10 w-full max-w-[1440px] mx-auto px-6 sm:px-8 md:px-[8%] lg:px-[10%] py-12 md:py-28 lg:py-32 mt-[-4rem] lg:mt-[-8rem]"
         style={{ y: textY }}
       >
         <motion.div
-          className="max-w-3xl space-y-6 md:space-y-10"
+          className="max-w-3xl space-y-4 md:space-y-6"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -250,8 +252,8 @@ const HeroSection = () => {
             className="flex flex-col leading-[0.95] tracking-tight"
           >
             {/* Line 1: "FEED YOUR" — Syne bold uppercase */}
-            <span
-              className="text-[clamp(1.75rem,5vw,4.5rem)] text-white/90 mb-1"
+            <div
+              className="flex items-center flex-nowrap whitespace-nowrap gap-3 md:gap-5 text-[clamp(1.1rem,6vw,4.5rem)] text-white/90 mb-1"
               style={{
                 fontFamily: '"Syne", sans-serif',
                 fontWeight: 800,
@@ -259,8 +261,22 @@ const HeroSection = () => {
                 letterSpacing: "-0.01em",
               }}
             >
-              {t("home.hero_title_help")}
-            </span>
+              <span>{t("home.hero_title_help")}</span>
+              <motion.img
+                src={hclogo}
+                alt="Logo"
+                className="h-[2.2em] w-auto object-contain drop-shadow-[0_5px_15px_rgba(231,76,60,0.3)]"
+                animate={{
+                  y: [0, 10, 0],
+                  scale: [1, 1.03, 1],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            </div>
 
             {/* Line 2: "Humanity" — Syne Bold with animated flowing gradient */}
             <span className="relative inline-block">
@@ -309,11 +325,15 @@ const HeroSection = () => {
           </motion.p>
 
           {/* ── CTAs ── */}
-          <div className="flex flex-wrap items-center gap-4 md:gap-5 pt-2">
-            <PrimaryCTA to="/collaborate" delay={0.9}>
-              {t("home.collaborate_with_us")}
+          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5 pt-2">
+            <PrimaryCTA to="/donate" delay={0.9} className="w-full sm:w-auto">
+              {t("nav.donate_now")}
             </PrimaryCTA>
-            <SecondaryCTA to="/volunteer" delay={1.05}>
+            <SecondaryCTA
+              to="/volunteer"
+              delay={1.05}
+              className="w-full sm:w-auto"
+            >
               {t("home.volunteer_with_us")}
             </SecondaryCTA>
           </div>

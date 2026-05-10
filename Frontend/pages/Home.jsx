@@ -23,6 +23,12 @@ const Home = () => {
   const [visibleCount, setVisibleCount] = useState(8);
   const prevVisibleCount = useRef(0);
 
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setVisibleCount(4);
+    }
+  }, []);
+
   const handleLoadMore = () => {
     setVisibleCount(PROGRAMS.length);
   };
@@ -454,11 +460,11 @@ const Home = () => {
                 onClick={handleLoadMore}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative px-14 py-6 bg-white rounded-full transition-all duration-500 overflow-hidden border border-black/8 shadow-[0_10px_30px_rgba(0,0,0,0.03)]"
+                className="group relative px-8 sm:px-14 lg:px-16 py-4 sm:py-6 lg:py-7 bg-white rounded-full transition-all duration-700 overflow-hidden border border-black/8 hover:border-[#4F46E5]/40 shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.15)]"
               >
                 {/* Subtle Moving Prism Background */}
                 <div 
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none blur-xl"
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none blur-2xl scale-110"
                   style={{ 
                     background: "conic-gradient(from 0deg, #4F46E5, #10B981, #F59E0B, #4F46E5)",
                     animation: "spin 4s linear infinite"
@@ -469,11 +475,23 @@ const Home = () => {
                 <div className="absolute inset-[2px] bg-white rounded-full z-0 group-hover:inset-[4px] transition-all duration-500" />
 
                 <motion.span 
-                  className="relative z-10 text-[12px] font-black uppercase tracking-[0.4em] text-[#1a1a1a] group-hover:tracking-[0.5em] transition-all duration-500 flex items-center gap-4"
+                  className="relative z-10 text-[10px] sm:text-[12px] lg:text-[13px] font-black uppercase tracking-[0.1em] sm:tracking-[0.4em] lg:tracking-[0.5em] text-[#4F46E5] flex items-center gap-2 sm:gap-4 whitespace-nowrap"
                 >
-                  <span className="w-6 h-px bg-black/10 group-hover:bg-black/40 transition-colors" />
+                  <span className="hidden sm:block w-8 h-px bg-[#4F46E5]/20 group-hover:bg-[#4F46E5]/60 transition-all duration-500" />
+                  
+                  <svg 
+                    className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-700 group-hover:rotate-180" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                    strokeWidth={3}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+
                   Load Full Archive
-                  <span className="w-6 h-px bg-black/10 group-hover:bg-black/40 transition-colors" />
+                  
+                  <span className="hidden sm:block w-8 h-px bg-[#4F46E5]/20 group-hover:bg-[#4F46E5]/60 transition-all duration-500" />
                 </motion.span>
                 
                 {/* Wide Prism Glow Shadow */}

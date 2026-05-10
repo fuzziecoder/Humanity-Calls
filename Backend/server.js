@@ -19,6 +19,8 @@ import formSubmissionRoutes from "./routes/formSubmissionRoutes.js";
 import publicSubmissionAdminRoutes from "./routes/publicSubmissionAdminRoutes.js";
 import teamRoutes from "./routes/teamRoutes.js";
 import reimbursementRoutes from "./routes/reimbursementRoutes.js";
+import feedbackRoutes from "./routes/feedbackRoutes.js";
+import donationRoutes from "./routes/donationRoutes.js";
 import { initAdmin } from "./controllers/authController.js";
 import { initBirthdayCron } from "./utils/birthdayCron.js";
 
@@ -80,6 +82,8 @@ app.use("/api/form-submissions", formSubmissionRoutes);
 app.use("/api/public-submissions", publicSubmissionAdminRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/reimbursements", reimbursementRoutes);
+app.use("/api/feedback", feedbackRoutes);
+app.use("/api/donations", donationRoutes);
 app.use("/api", emailRoutes);
 
 const PORT = process.env.PORT || 5000;

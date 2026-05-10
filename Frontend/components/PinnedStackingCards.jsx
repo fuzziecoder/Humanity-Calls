@@ -6,7 +6,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 const ActionButton = ({ to, label }) => (
   <Link
     to={to}
-    className="inline-flex flex-1 items-center justify-center px-4 py-3 rounded-full border border-white/80 text-white text-[11px] font-black uppercase tracking-[0.2em] bg-black/35 backdrop-blur-md shadow-[0_10px_25px_rgba(0,0,0,0.35)] hover:bg-white hover:text-[#1A1A1A] hover:border-white hover:shadow-[0_12px_30px_rgba(255,255,255,0.4)] transition-all duration-300"
+    className="inline-flex flex-1 items-center justify-center px-2 sm:px-4 py-3 rounded-full border border-white/80 text-white text-[7.5px] min-[375px]:text-[8.5px] sm:text-[11px] font-black uppercase tracking-tight min-[375px]:tracking-[0.1em] sm:tracking-[0.2em] bg-black/35 backdrop-blur-md shadow-[0_10px_25px_rgba(0,0,0,0.35)] hover:bg-white hover:text-[#1A1A1A] hover:border-white hover:shadow-[0_12px_30px_rgba(255,255,255,0.4)] transition-all duration-300 whitespace-nowrap"
   >
     {label}
   </Link>
@@ -56,7 +56,7 @@ const Card = ({ title, description, color, image, index, total, actions = [] }) 
         <div className="absolute bottom-10 right-10 w-48 h-48 bg-black/10 rounded-full blur-3xl" />
 
         {/* Content Section */}
-        <div className={`relative z-10 w-full md:w-1/2 h-1/2 md:h-full flex flex-col justify-center p-8 md:p-16 text-left space-y-6 md:space-y-8 ${index % 2 === 1 ? 'md:items-start' : 'md:items-start'}`}>
+        <div className={`relative z-10 w-full md:w-1/2 h-1/2 md:h-full flex flex-col justify-center p-6 sm:p-8 md:p-16 text-left space-y-4 sm:space-y-6 md:space-y-8 ${index % 2 === 1 ? 'md:items-start' : 'md:items-start'}`}>
           <motion.h2
             initial={{ opacity: 0, x: index % 2 === 1 ? 30 : -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -79,7 +79,7 @@ const Card = ({ title, description, color, image, index, total, actions = [] }) 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-[clamp(0.9rem,1.2vw,1.1rem)] text-white/90 max-w-lg font-light leading-relaxed"
+            className="text-[clamp(0.8rem,1.2vw,1.1rem)] text-white/90 max-w-lg font-light leading-relaxed line-clamp-4 md:line-clamp-none"
             style={{ fontFamily: '"Poppins", sans-serif' }}
           >
             {description}
@@ -91,7 +91,7 @@ const Card = ({ title, description, color, image, index, total, actions = [] }) 
             transition={{ duration: 0.6, delay: 0.6 }}
             className="pt-2 w-full max-w-lg"
           >
-            <div className="flex items-center gap-3 w-full">
+            <div className="flex items-center gap-2 sm:gap-3 w-full">
               {actions.map((action) => (
                 <ActionButton key={`${action.to}-${action.label}`} to={action.to} label={action.label} />
               ))}
@@ -100,10 +100,6 @@ const Card = ({ title, description, color, image, index, total, actions = [] }) 
           </motion.div>
         </div>
 
-        {/* Card Numbering */}
-        <div className="absolute bottom-8 left-12 text-white/20 text-6xl md:text-8xl font-black italic pointer-events-none select-none">
-          0{index + 1}
-        </div>
       </motion.div>
     </div>
   );

@@ -9,7 +9,7 @@ import ProfilePictureCropper from "../components/ProfilePictureCropper";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { getCurrentLocationLabel } from "../utils/location";
-import { FaCheckCircle, FaTimes, FaCamera, FaInfoCircle, FaPen, FaShareAlt } from "react-icons/fa";
+import { FaCheckCircle, FaTimes, FaCamera, FaInfoCircle, FaPen, FaShareAlt, FaCloudUploadAlt, FaTrashAlt } from "react-icons/fa";
 import hclogo from "../assets/humanitycallslogo.avif";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -263,7 +263,6 @@ const Volunteer = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
     if (!formData.termsAccepted) {
       toast.error("Please accept the Terms and Conditions");
       return;
@@ -543,20 +542,6 @@ const Volunteer = ({
                 <Button onClick={() => window.location.href = '/'} className="w-full mt-4">Back to Home</Button>
               )}
             </div>
-          ) : user && !user?.isVerified ? (
-            <div className="text-center py-8 space-y-6">
-              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaInfoCircle size={40} />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-800">Email Verification Required</h3>
-              <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
-                To submit a volunteer application, you must first verify your email address. 
-                Please go to your profile to receive a verification code.
-              </p>
-              <Button onClick={() => window.location.href = '/profile'} className="w-full mt-4 bg-primary text-white hover:bg-primary/90">
-                Go to Profile
-              </Button>
-            </div>
           ) : (
             <>
               <div className="flex justify-between items-center mb-8 gap-4 mr-8">
@@ -605,7 +590,7 @@ const Volunteer = ({
                   <label className="text-xs text-gray-500 ml-1">
                     Profile Picture *
                   </label>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-6 p-4 bg-gray-50 rounded-2xl border border-gray-100">
                     <div className="relative group shrink-0">
                       <input
                         type="file"
@@ -616,7 +601,7 @@ const Volunteer = ({
                       />
                       <label
                         htmlFor="profile-upload"
-                        className="relative w-16 h-16 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center cursor-pointer overflow-hidden transition-all hover:border-primary/60"
+                        className="relative w-20 h-20 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center cursor-pointer overflow-hidden transition-all hover:border-primary/60 bg-white shadow-sm"
                       >
                         {profilePreview ? (
                           <>
@@ -626,13 +611,16 @@ const Volunteer = ({
                             </span>
                           </>
                         ) : (
-                          <FaCamera className="text-primary/40" />
+                          <div className="flex flex-col items-center gap-1">
+                            <FaCamera className="text-primary/40 text-xl" />
+                            <span className="text-[8px] font-black uppercase text-primary/40">Upload</span>
+                          </div>
                         )}
                       </label>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 leading-relaxed">Upload a clear portrait photo. Max 5MB.</p>
-                      <p className="text-[10px] text-primary/60 font-semibold mt-0.5">📐 Will be cropped to 1:1 square</p>
+                      <p className="text-[11px] font-bold text-gray-700 mb-1">Portrait Photo</p>
+                      <p className="text-[10px] text-gray-400 leading-relaxed">Please upload a clear face photo.<br/>Max 5MB • 1:1 Aspect Ratio</p>
                     </div>
                   </div>
                 </div>
@@ -801,41 +789,49 @@ const Volunteer = ({
                     <label className="text-xs text-gray-500 ml-1">
                       Upload Gov ID Image *
                     </label>
-                    <div className="relative group">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="hidden"
-                        id="gov-id-upload"
-                      />
-                      <label
-                        htmlFor="gov-id-upload"
-                        className={`w-full flex flex-col items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-all ${govIdPreview ? "border-primary bg-primary/5 h-32" : "border-border hover:border-primary/50 h-12"}`}
-                      >
-                        {govIdPreview ? (
-                          <div className="relative w-full h-full flex items-center justify-center">
-                            <img
-                              src={govIdPreview}
-                              alt="Preview"
-                              className="h-full w-auto object-contain rounded shadow-sm"
-                            />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded">
-                              <span className="text-white text-xs font-bold uppercase tracking-widest">
-                                Change Image
-                              </span>
-                            </div>
+                    {!govIdPreview ? (
+                      <div className="relative group">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className="w-full h-32 border-2 border-dashed border-gray-200 bg-gray-50 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group-hover:border-primary group-hover:bg-primary/5">
+                          <div className="w-10 h-10 bg-white text-primary shadow-sm rounded-xl flex items-center justify-center">
+                            <FaCloudUploadAlt size={20} />
                           </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <FaCamera className="text-gray-400" />
-                            <span className="text-sm font-medium text-gray-500">
-                              Upload ID Image
-                            </span>
+                          <div className="text-center px-4">
+                            <p className="text-[11px] font-bold text-gray-700">Click to upload ID photo</p>
+                            <p className="text-[9px] text-gray-400 uppercase tracking-widest font-bold mt-1">PNG, JPG up to 5MB</p>
                           </div>
-                        )}
-                      </label>
-                    </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative h-32 rounded-2xl overflow-hidden border border-border group shadow-sm">
+                        <img
+                          src={govIdPreview}
+                          alt="ID preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedFile(null);
+                              setGovIdPreview(null);
+                              setFormData(p => ({ ...p, govIdImage: "" }));
+                            }}
+                            className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-all transform translate-y-2 group-hover:translate-y-0"
+                          >
+                            <FaTrashAlt size={12} />
+                          </button>
+                        </div>
+                        <div className="absolute top-2 left-2 bg-primary text-white text-[9px] font-black px-2 py-0.5 rounded-lg shadow-lg">
+                          SELECTED
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

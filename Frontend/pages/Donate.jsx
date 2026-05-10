@@ -11,6 +11,9 @@ import { fetchFormAssets } from "../utils/formAssets";
 import { getCurrentLocationLabel } from "../utils/location";
 import withFormAuth from "../components/withFormAuth";
 import { toast } from "react-toastify";
+import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaHeart, FaCheckCircle, FaHandHoldingHeart, FaCloudUploadAlt, FaTrashAlt } from "react-icons/fa";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,11 +27,13 @@ const Donate = ({
   const { t, i18n } = useTranslation();
   const containerRef = useRef(null);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [heroImage, setHeroImage] = useState(
     "https://res.cloudinary.com/daokrum7i/image/upload/f_auto,q_auto,w_900/v1767814232/hc_blood_donation_mfwveo.png",
   );
+  const [showThankYou, setShowThankYou] = useState(false);
 
   useLayoutEffect(() => {
     const isMobile = window.innerWidth < 768;
@@ -121,19 +126,25 @@ const Donate = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
     setLoading(true);
+    try {
+      let finalImageUrl = formData.donationImageUrl;
 
-    const success = await sendEmail(
-      "Donation Inquiry",
-      formData,
-      `New Donation from ${formData.name}`,
-    );
+      // Upload image first if a new file is selected
+      if (selectedFile) {
+        finalImageUrl = await uploadPublicImage(selectedFile);
+      }
 
-    if (success) {
+      const submissionData = {
+        ...formData,
+        donationImageUrl: finalImageUrl
+      };
+
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/donations`, submissionData);
+      setShowThankYou(true);
       clearPendingFormData();
       setFormData({
-        name: "",
+        name: user?.name || "",
         email: user?.email || "",
         phone: "",
         amount: "",
@@ -141,8 +152,13 @@ const Donate = ({
         locationAddress: "",
         donationImageUrl: "",
       });
+      setSelectedFile(null);
+      setPreviewUrl("");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Submission failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleAutoLocation = async () => {
@@ -157,20 +173,11 @@ const Donate = ({
     }
   };
 
-  const handleDonationImage = async (e) => {
+  const handleDonationImage = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-    try {
-      const imageUrl = await uploadPublicImage(file);
-      setFormData((prev) => ({ ...prev, donationImageUrl: imageUrl || "" }));
-      toast.success("Image uploaded");
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Image upload failed");
-    } finally {
-      setUploading(false);
-      e.target.value = "";
-    }
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   return (
@@ -344,23 +351,52 @@ const Donate = ({
                 />
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="block text-sm font-semibold text-gray-700">
                 Payment screenshot (optional)
               </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleDonationImage}
-                className="w-full text-sm"
-              />
-              {uploading && <p className="text-xs text-gray-500">Uploading image...</p>}
-              {formData.donationImageUrl && (
-                <img
-                  src={formData.donationImageUrl}
-                  alt="Payment proof"
-                  className="mt-2 max-h-40 rounded-lg border border-border"
-                />
+              
+              {!previewUrl ? (
+                <div className="relative group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleDonationImage}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="w-full py-6 px-4 border-2 border-dashed border-gray-200 bg-gray-50 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group-hover:border-primary group-hover:bg-primary/5">
+                    <div className="w-12 h-12 bg-white text-primary shadow-sm rounded-xl flex items-center justify-center">
+                      <FaCloudUploadAlt size={24} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-bold text-gray-700">Click to upload screenshot</p>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-1">PNG, JPG up to 10MB</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative rounded-2xl overflow-hidden border border-border group shadow-sm">
+                  <img
+                    src={previewUrl}
+                    alt="Payment proof"
+                    className="w-full aspect-video object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        setPreviewUrl("");
+                      }}
+                      className="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-all transform translate-y-2 group-hover:translate-y-0"
+                    >
+                      <FaTrashAlt size={16} />
+                    </button>
+                  </div>
+                  <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg">
+                    SELECTED
+                  </div>
+                </div>
               )}
             </div>
             {renderSubmitButton(
@@ -379,6 +415,53 @@ const Donate = ({
           </form>
         </div>
       </div>
+
+
+
+      {/* Thank You Popup */}
+      <AnimatePresence>
+        {showThankYou && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 40 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 40 }}
+              className="bg-white rounded-[3rem] p-8 md:p-12 max-w-lg w-full text-center shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-blood to-primary" />
+              
+              <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+                <FaCheckCircle size={48} className="animate-bounce" />
+              </div>
+
+              <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">
+                Thank You for Your Donation! ❤️
+              </h2>
+              
+              <p className="text-slate-600 text-lg font-medium leading-relaxed mb-8">
+                Your generosity makes a real difference. We have received your details and will update you shortly via email.
+              </p>
+
+              <div className="bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100 flex items-center gap-4 text-left">
+                <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
+                  <FaHandHoldingHeart size={20} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-black text-primary uppercase tracking-widest leading-none mb-1">Impact Status</p>
+                  <p className="text-sm font-bold text-slate-700">Verification in progress...</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowThankYou(false)}
+                className="w-full py-5 rounded-2xl bg-primary text-white font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                Continue Browsing
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

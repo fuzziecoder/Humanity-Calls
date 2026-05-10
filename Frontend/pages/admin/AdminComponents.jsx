@@ -14,22 +14,25 @@ export const DetailItem = ({ label, value }) => (
   </div>
 );
 
-export const DetailList = ({ label, items }) => (
-  <div>
-    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-body/40 mb-3">{label}</p>
-    <div className="flex flex-wrap gap-2">
-      {items && items.length > 0 ? (
-        items.map((item, i) => (
-          <span key={i} className="px-3 py-1 bg-primary/5 text-primary text-[10px] font-bold rounded-lg border border-primary/10 capitalize">
-            {item}
-          </span>
-        ))
-      ) : (
-        <span className="text-xs text-text-body/40 italic">None selected</span>
-      )}
+export const DetailList = ({ label, items }) => {
+  const displayItems = Array.isArray(items) ? items : (items ? [items] : []);
+  return (
+    <div>
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-body/40 mb-3">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {displayItems.length > 0 ? (
+          displayItems.map((item, i) => (
+            <span key={i} className="px-3 py-1 bg-primary/5 text-primary text-[10px] font-bold rounded-lg border border-primary/10 capitalize">
+              {item}
+            </span>
+          ))
+        ) : (
+          <span className="text-xs text-text-body/40 italic">None selected</span>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const calculateAge = (dob) => {
   if (!dob) return "N/A";
@@ -231,6 +234,11 @@ export const VolunteerEditModal = ({ isOpen, onClose, volunteer, onUpdate }) => 
         if (index > -1) currentArray.splice(index, 1);
       }
       setFormData((prev) => ({ ...prev, [name]: currentArray }));
+      return;
+    }
+
+    if (type === "radio") {
+      setFormData((prev) => ({ ...prev, [name]: value }));
       return;
     }
 
@@ -474,7 +482,7 @@ export const VolunteerEditModal = ({ isOpen, onClose, volunteer, onUpdate }) => 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {timeCommitments.map(opt => (
                       <label key={opt} className="flex items-center gap-2 p-3 rounded-xl border border-border hover:bg-bg cursor-pointer transition-all">
-                        <input type="checkbox" name="timeCommitment" value={opt} checked={formData.timeCommitment?.includes(opt)} onChange={handleChange} className="w-4 h-4 text-primary" />
+                        <input type="radio" name="timeCommitment" value={opt} checked={formData.timeCommitment === opt} onChange={handleChange} className="w-4 h-4 text-primary" />
                         <span className="text-xs font-bold text-text-body/70">{opt}</span>
                       </label>
                     ))}
@@ -486,7 +494,7 @@ export const VolunteerEditModal = ({ isOpen, onClose, volunteer, onUpdate }) => 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {workingModes.map(opt => (
                       <label key={opt} className="flex items-center gap-2 p-3 rounded-xl border border-border hover:bg-bg cursor-pointer transition-all">
-                        <input type="checkbox" name="workingMode" value={opt} checked={formData.workingMode?.includes(opt)} onChange={handleChange} className="w-4 h-4 text-primary" />
+                        <input type="radio" name="workingMode" value={opt} checked={formData.workingMode === opt} onChange={handleChange} className="w-4 h-4 text-primary" />
                         <span className="text-xs font-bold text-text-body/70">{opt}</span>
                       </label>
                     ))}
@@ -498,7 +506,19 @@ export const VolunteerEditModal = ({ isOpen, onClose, volunteer, onUpdate }) => 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {rolePreferences.map(opt => (
                       <label key={opt} className="flex items-center gap-2 p-3 rounded-xl border border-border hover:bg-bg cursor-pointer transition-all">
-                        <input type="checkbox" name="rolePreference" value={opt} checked={formData.rolePreference?.includes(opt)} onChange={handleChange} className="w-4 h-4 text-primary" />
+                        <input type="radio" name="rolePreference" value={opt} checked={formData.rolePreference === opt} onChange={handleChange} className="w-4 h-4 text-primary" />
+                        <span className="text-xs font-bold text-text-body/70">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className={labelClasses}>Optional Donation Support</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {["T-Shirts", "Gadgets", "Laptops", "Phones"].map(opt => (
+                      <label key={opt} className="flex items-center gap-2 p-3 rounded-xl border border-border hover:bg-bg cursor-pointer transition-all">
+                        <input type="checkbox" name="deviceDonationChoices" value={opt} checked={formData.deviceDonationChoices?.includes(opt)} onChange={handleChange} className="w-4 h-4 text-primary" />
                         <span className="text-xs font-bold text-text-body/70">{opt}</span>
                       </label>
                     ))}
