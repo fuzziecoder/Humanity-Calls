@@ -1,5 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
+import { getAuthToken } from "./authToken.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 export const sendEmail = async (type, data, subject) => {
@@ -41,7 +42,7 @@ export const sendEmail = async (type, data, subject) => {
   }
 
   try {
-    const token = sessionStorage.getItem("token");
+    const token = getAuthToken();
     const headers = {};
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;

@@ -1,5 +1,5 @@
 import express from "express";
-import { protect, adminOnly, optionalProtect } from "../middleware/auth.js";
+import { protect, adminOnly } from "../middleware/auth.js";
 import {
   createFormSubmission,
   deleteFormSubmission,
@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-router.post("/:kind", optionalProtect, createFormSubmission);
+router.post("/:kind", protect, createFormSubmission);
 router.get("/", protect, adminOnly, listFormSubmissions);
 router.delete("/:id", protect, adminOnly, deleteFormSubmission);
 

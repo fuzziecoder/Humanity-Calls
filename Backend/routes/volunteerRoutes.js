@@ -11,6 +11,8 @@ import {
   updateMyProfilePicture,
   deleteVolunteer,
   getActiveVolunteerCount,
+  adminRemoveVolunteerProfilePicture,
+  adminReplaceVolunteerProfilePicture,
 } from "../controllers/volunteerController.js";
 import { uploadFileOnly } from "../controllers/galleryController.js";
 import { protect, adminOnly } from "../middleware/auth.js";
@@ -69,6 +71,22 @@ router.post("/upload", protect, (req, res, next) => {
 }, uploadFileOnly);
 router.get("/", protect, adminOnly, getVolunteers);
 router.put("/status/:id", protect, adminOnly, updateVolunteerStatus);
+router.delete("/:id/profile-picture", protect, adminOnly, adminRemoveVolunteerProfilePicture);
+router.post(
+  "/:id/profile-picture",
+  protect,
+  adminOnly,
+  (req, res, next) => {
+    upload.single("image")(req, res, (err) => {
+      if (err) {
+        console.error("Multer error:", err.message);
+        return res.status(400).json({ message: err.message });
+      }
+      next();
+    });
+  },
+  adminReplaceVolunteerProfilePicture,
+);
 router.put("/:id", protect, adminOnly, updateVolunteer);
 router.delete("/:id", protect, adminOnly, deleteVolunteer);
 

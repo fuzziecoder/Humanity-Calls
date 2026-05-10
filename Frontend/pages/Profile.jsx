@@ -26,6 +26,8 @@ import { toast } from "react-toastify";
 import SEO from "../components/SEO";
 import ProfilePictureCropper from "../components/ProfilePictureCropper";
 import QRCode from "react-qr-code";
+import { getAuthToken } from "../utils/authToken.js";
+import { downloadSvgAsPng } from "../utils/qrDownload.js";
 
 const LanguageSelectorProfile = () => {
   const { i18n } = useTranslation();
@@ -89,6 +91,7 @@ const Profile = () => {
   const [showPhotoCropModal, setShowPhotoCropModal] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const photoInputRef = useRef(null);
+  const memberQrWrapRef = useRef(null);
 
   // Reimbursement
   const [reimbLoading, setReimbLoading] = useState(false);
@@ -117,7 +120,7 @@ const Profile = () => {
   }, [user]);
 
   const fetchVolunteerStatus = async () => {
-    const token = sessionStorage.getItem("token");
+    const token = getAuthToken();
     const headers = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
     try {
@@ -141,7 +144,7 @@ const Profile = () => {
 
   const fetchMyReimbursements = async () => {
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/reimbursements/my`, {
         headers,
@@ -232,7 +235,7 @@ const Profile = () => {
     }, 400);
 
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
       const response = await axios.get(
@@ -306,7 +309,7 @@ const Profile = () => {
     setRawProfileImage(null);
     setIsUploadingPhoto(true);
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
       // 1. Upload to Cloudinary via existing upload endpoint
       const uploadData = new FormData();
@@ -345,7 +348,7 @@ const Profile = () => {
     }
     setReimbUploading(true);
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
       const uploadData = new FormData();
       uploadData.append("image", file);
@@ -372,7 +375,7 @@ const Profile = () => {
     }
     setReimbLoading(true);
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       await axios.post(
         `${import.meta.env.VITE_API_URL}/reimbursements`,
@@ -392,6 +395,21 @@ const Profile = () => {
     } finally {
       setReimbLoading(false);
     }
+  };
+
+  const memberUid = user?.id ?? user?._id;
+  const memberCardUrl =
+    memberUid != null &&
+    String(memberUid).length > 0 &&
+    typeof window !== "undefined"
+      ? `${window.location.origin}/member-card/${String(memberUid)}`
+      : "";
+
+  const handleDownloadMemberQr = () => {
+    const svg = memberQrWrapRef.current?.querySelector("svg");
+    if (!svg) return;
+    downloadSvgAsPng(svg, `humanity-calls-emergency-qr-${String(memberUid)}.png`);
+    toast.success("QR code downloaded");
   };
 
   return (
@@ -685,36 +703,59 @@ const Profile = () => {
                   )
                 )}
 
-                {volunteerStatus === "temporary" && volunteerData?.volunteerId && (
+                {(volunteerStatus === "active" || volunteerStatus === "temporary") && (
                   !user?.isVerified ? (
-                    <div className="w-full p-6 bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-2xl flex flex-col items-center justify-center gap-4 cursor-not-allowed">
+                    <div className="w-full p-6 bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-4 cursor-not-allowed">
                       <div className="w-12 h-12 bg-gray-200 text-gray-400 rounded-full flex items-center justify-center text-xl mb-2">
                         <FaTimesCircle />
                       </div>
                       <div>
                         <h3 className="font-bold text-gray-500 mb-1 text-center">
-                          Verify Mail to Access Your ID
+                          Verify email for emergency QR card
                         </h3>
-                        <p className="text-gray-400 text-sm font-medium text-center">
-                          You must verify your email address to view your QR code.
+                        <p className="text-gray-400 text-sm font-medium text-center max-w-sm">
+                          Verify your email to download your public emergency contact card QR.
                         </p>
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full p-6 bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-2xl flex flex-col items-center justify-center gap-4">
-                      <span className="block text-xs font-black tracking-[0.1em] text-orange-600 uppercase text-center">
-                        Temporary ID Verification
+                    <div className="w-full p-6 bg-gradient-to-br from-slate-50 via-white to-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-4 shadow-inner">
+                      <span className="block text-xs font-black tracking-[0.15em] text-primary uppercase text-center">
+                        Emergency &amp; public contact card
                       </span>
-                      <div className="bg-white p-4 rounded-xl shadow-sm border border-orange-100 flex items-center justify-center">
-                        <QRCode
-                          value={`https://humanitycalls.org/verify/${volunteerData.volunteerId}`}
-                          size={150}
-                          level="M"
-                        />
-                      </div>
-                      <p className="text-xs font-bold text-orange-700 text-center max-w-xs">
-                        Scan this QR code to verify your temporary volunteer identity.
+                      <p className="text-xs font-medium text-text-body/70 text-center max-w-md leading-relaxed">
+                        Share this QR with family or carry it on your phone. A scan shows your approved member details and lets someone notify Humanity Calls admin in an emergency.
                       </p>
+                      {memberCardUrl ? (
+                        <div ref={memberQrWrapRef} className="bg-white p-4 rounded-2xl shadow-md border border-slate-100">
+                          <QRCode value={memberCardUrl} size={168} level="M" />
+                        </div>
+                      ) : (
+                        <p className="text-xs font-bold text-amber-700 text-center max-w-sm">
+                          Your account ID is missing from this session. Refresh the page or log out and log in again to generate your emergency card QR.
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleDownloadMemberQr}
+                        disabled={!memberCardUrl}
+                        className="px-6 py-3 rounded-xl bg-primary text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/25 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Download QR (PNG)
+                      </button>
+                      {volunteerStatus === "temporary" && volunteerData?.volunteerId ? (
+                        <p className="text-[11px] font-bold text-orange-700 text-center">
+                          Official verification:{" "}
+                          <a
+                            href={`https://humanitycalls.org/verify/${volunteerData.volunteerId}`}
+                            className="underline text-primary"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Open verify link
+                          </a>
+                        </p>
+                      ) : null}
                     </div>
                   )
                 )}
