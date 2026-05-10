@@ -11,6 +11,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { getCurrentLocationLabel } from "../utils/location";
 import { uploadPublicImage } from "../utils/publicForms";
+import { getAuthToken } from "../utils/authToken.js";
 import { FaPaperclip } from "react-icons/fa";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -158,7 +159,7 @@ const AnimalRescue = ({
     setLoading(true);
 
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       await axios.post(
@@ -203,7 +204,7 @@ const AnimalRescue = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       await axios.post(

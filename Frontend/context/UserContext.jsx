@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { getAuthToken, setAuthToken } from "../utils/authToken.js";
 
 const UserContext = createContext();
 
@@ -13,7 +14,7 @@ export const UserProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = {};
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
@@ -26,7 +27,7 @@ export const UserProvider = ({ children }) => {
       setUser(response.data.user);
     } catch (error) {
       setUser(null);
-      sessionStorage.removeItem("token");
+      setAuthToken(null);
     } finally {
       setLoading(false);
     }
@@ -43,7 +44,7 @@ export const UserProvider = ({ children }) => {
       { withCredentials: true },
     );
     if (response.data.token) {
-      sessionStorage.setItem("token", response.data.token);
+      setAuthToken(response.data.token);
     }
     setUser(response.data.user);
     return response.data;
@@ -54,7 +55,7 @@ export const UserProvider = ({ children }) => {
       withCredentials: true,
     });
     if (response.data.token) {
-      sessionStorage.setItem("token", response.data.token);
+      setAuthToken(response.data.token);
     }
     setUser(response.data.user);
     return response.data;
@@ -62,7 +63,7 @@ export const UserProvider = ({ children }) => {
 
   const logout = async () => {
     await axios.post(`${API_URL}/auth/logout`, {}, { withCredentials: true });
-    sessionStorage.removeItem("token");
+    setAuthToken(null);
     setUser(null);
     
     // Clear all pending form data from localStorage
@@ -74,7 +75,7 @@ export const UserProvider = ({ children }) => {
   };
 
   const updateProfile = async (data) => {
-    const token = sessionStorage.getItem("token");
+    const token = getAuthToken();
     const headers = {};
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
@@ -89,7 +90,7 @@ export const UserProvider = ({ children }) => {
   };
 
   const verifyProfileEmail = async (otp) => {
-    const token = sessionStorage.getItem("token");
+    const token = getAuthToken();
     const headers = {};
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;

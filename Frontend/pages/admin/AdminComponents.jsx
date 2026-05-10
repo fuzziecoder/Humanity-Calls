@@ -4,6 +4,7 @@ import { FaUserFriends, FaCheck, FaTimes, FaBan, FaEnvelope, FaCamera, FaPen, Fa
 import axios from "axios";
 import { toast } from "react-toastify";
 import UniversalImageCropper from "../../components/UniversalImageCropper";
+import { getAuthToken } from "../../utils/authToken.js";
 
 export const LOGO_URL = "https://res.cloudinary.com/daokrum7i/image/upload/v1768550123/favicon-32x32_kca2tb.png";
 
@@ -156,6 +157,16 @@ export const ViewMoreModal = ({ isOpen, onClose, vol }) => {
               <div className="p-6 bg-bg/50 rounded-3xl space-y-4">
                 <h4 className="text-xs font-black text-primary uppercase tracking-widest border-b border-primary/10 pb-2">Verification Information</h4>
                 <DetailItem label="Government ID" value={vol.govIdType} />
+                <DetailItem
+                  label="Driving license"
+                  value={
+                    vol.hasDrivingLicense
+                      ? vol.drivingLicenseImageUrl
+                        ? "Yes — open Documents from admin list to view upload"
+                        : "Declared yes — document missing"
+                      : "No"
+                  }
+                />
                 <DetailItem label="Blood Group" value={vol.bloodGroup} />
               </div>
             </div>
@@ -261,7 +272,7 @@ export const VolunteerEditModal = ({ isOpen, onClose, volunteer, onUpdate }) => 
   const handleCropDone = async (croppedFile) => {
     setIsUploading(true);
     try {
-      const token = sessionStorage.getItem("adminToken") || sessionStorage.getItem("token");
+      const token = sessionStorage.getItem("adminToken") || getAuthToken();
       const uploadData = new FormData();
       uploadData.append("image", croppedFile);
       
@@ -296,7 +307,7 @@ export const VolunteerEditModal = ({ isOpen, onClose, volunteer, onUpdate }) => 
     if (e) e.preventDefault();
     setIsUpdating(true);
     try {
-      const token = sessionStorage.getItem("adminToken") || sessionStorage.getItem("token");
+      const token = sessionStorage.getItem("adminToken") || getAuthToken();
       await axios.put(
         `${import.meta.env.VITE_API_URL}/volunteers/${formData._id}`,
         formData,

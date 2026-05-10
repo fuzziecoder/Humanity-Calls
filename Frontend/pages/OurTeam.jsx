@@ -71,8 +71,6 @@ const OurTeam = () => {
 
   const leaderTier = uniqueMembers.filter((member) => getRoleTier(member.teamRole) === "leader");
   const coordinatorTier = uniqueMembers.filter((member) => getRoleTier(member.teamRole) === "coordinator");
-  const memberTier = uniqueMembers.filter((member) => getRoleTier(member.teamRole) === "member");
-  const internTier = uniqueMembers.filter((member) => getRoleTier(member.teamRole) === "intern");
 
   return (
     <div className="bg-bg min-h-screen py-24">
@@ -83,7 +81,7 @@ const OurTeam = () => {
           Our <span className="text-primary italic">Team Tree</span>
         </h1>
         <p className="mt-4 text-text-body/60 max-w-2xl">
-          Binary-style hierarchy from team leaders to coordinators, members, and interns.
+          Leadership structure showing team leaders and coordinators.
         </p>
 
         <div className="mt-10">
@@ -92,9 +90,7 @@ const OurTeam = () => {
           ) : uniqueMembers.length > 0 ? (
             <div className="bg-white rounded-3xl border border-border shadow-xl p-6 md:p-10">
               <TierRow title="Team Leaders" nodes={leaderTier} />
-              <TierRow title="Coordinators" nodes={coordinatorTier} />
-              <TierRow title="Team Members" nodes={memberTier} />
-              <TierRow title="Interns" nodes={internTier} showConnector={false} />
+              <TierRow title="Coordinators" nodes={coordinatorTier} showConnector={false} />
             </div>
           ) : (
             <div className="py-16 text-center text-text-body/60 font-bold">

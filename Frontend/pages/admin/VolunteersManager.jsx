@@ -1,13 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { 
-  FaUserFriends, FaSearch, FaDownload, 
-  FaEye, FaEdit, FaBan, FaTrash, FaCheck, FaTimes, FaIdCard
+import {
+  FaUserFriends,
+  FaSearch,
+  FaDownload,
+  FaEye,
+  FaEdit,
+  FaBan,
+  FaTrash,
+  FaCheck,
+  FaTimes,
+  FaIdCard,
+  FaFolderOpen,
+  FaQrcode,
+  FaSyncAlt,
+  FaUserMinus,
 } from "react-icons/fa";
+import QRCode from "react-qr-code";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { downloadSvgAsPng } from "../../utils/qrDownload.js";
 import { 
   calculateAge, IdModal, ViewMoreModal, VolunteerEditModal 
 } from "./AdminComponents";
@@ -35,6 +49,13 @@ const VolunteersManager = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [volunteerToDelete, setVolunteerToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [showDocsModal, setShowDocsModal] = useState(false);
+  const [docsVolunteer, setDocsVolunteer] = useState(null);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [qrVolunteer, setQrVolunteer] = useState(null);
+  const replacePhotoInputRef = useRef(null);
+  const [replacePhotoTarget, setReplacePhotoTarget] = useState(null);
 
   const volunteerTabs = ["pending", "active", "temporary", "inactive", "banned", "rejected"];
 
@@ -122,6 +143,76 @@ const VolunteersManager = () => {
     autoTable(doc, { head: [["ID", "Name", "Email", "Status"]], body: rows, startY: 20 });
     doc.save(`Volunteers_${volunteerStatusTab}_${new Date().toLocaleDateString()}.pdf`);
     setShowExportModal(false);
+  };
+
+  const openDocsModal = (vol) => {
+    setDocsVolunteer(vol);
+    setShowDocsModal(true);
+  };
+
+  const openQrModal = (vol) => {
+    setQrVolunteer(vol);
+    setShowQrModal(true);
+  };
+
+  const handleDeleteProfilePicture = async (vol) => {
+    if (!window.confirm(`Remove profile photo for ${vol.fullName}? They will be emailed to upload a new one.`)) {
+      return;
+    }
+    try {
+      const token = sessionStorage.getItem("adminToken");
+      await axios.delete(`${import.meta.env.VITE_API_URL}/volunteers/${vol._id}/profile-picture`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Profile photo removed");
+      fetchVolunteers();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to remove photo");
+    }
+  };
+
+  const pickReplacePhoto = (vol) => {
+    setReplacePhotoTarget(vol);
+    replacePhotoInputRef.current?.click();
+  };
+
+  const onReplacePhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !replacePhotoTarget) return;
+    try {
+      const token = sessionStorage.getItem("adminToken");
+      const fd = new FormData();
+      fd.append("image", file);
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/volunteers/${replacePhotoTarget._id}/profile-picture`,
+        fd,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+      toast.success("Profile photo replaced");
+      setReplacePhotoTarget(null);
+      fetchVolunteers();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Upload failed");
+    }
+  };
+
+  const downloadAdminQrPng = () => {
+    const uid = qrVolunteer?.user?._id || qrVolunteer?.user;
+    if (!uid) {
+      toast.error("Missing member account id");
+      return;
+    }
+    const wrap = document.getElementById("admin-member-qr-wrap");
+    const svg = wrap?.querySelector("svg");
+    if (!svg) return;
+    downloadSvgAsPng(svg, `member-emergency-qr-${uid}.png`);
+    toast.success("QR downloaded");
   };
 
   const handleDownloadMemberId = async (volunteer) => {
@@ -217,6 +308,7 @@ const VolunteersManager = () => {
                   <th className="px-4 py-4">Gender</th>
                   <th className="px-4 py-4">Details</th>
                   <th className="px-4 py-4">Gov ID</th>
+                  <th className="px-4 py-4 text-center">Docs / QR / Photo</th>
                   <th className="px-4 py-4 text-center">Actions</th>
                 </tr>
               </thead>
@@ -262,6 +354,38 @@ const VolunteersManager = () => {
                       >
                         <FaEye /> {vol.govIdType}
                       </button>
+                    </td>
+                    <td className="px-4 py-4 align-top">
+                      <div className="flex flex-col gap-1.5 items-stretch min-w-[128px]">
+                        <button
+                          type="button"
+                          onClick={() => openDocsModal(vol)}
+                          className="inline-flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider hover:bg-slate-900"
+                        >
+                          <FaFolderOpen size={11} /> View docs
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openQrModal(vol)}
+                          className="inline-flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg bg-primary text-white text-[10px] font-black uppercase tracking-wider hover:bg-primary/90"
+                        >
+                          <FaQrcode size={11} /> QR
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteProfilePicture(vol)}
+                          className="inline-flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg border border-blood/40 text-blood text-[10px] font-black uppercase tracking-wider hover:bg-blood/10"
+                        >
+                          <FaUserMinus size={11} /> Delete pic
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => pickReplacePhoto(vol)}
+                          className="inline-flex items-center justify-center gap-2 px-2 py-1.5 rounded-lg border border-primary/40 text-primary text-[10px] font-black uppercase tracking-wider hover:bg-primary/10"
+                        >
+                          <FaSyncAlt size={11} /> Replace pic
+                        </button>
+                      </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex justify-center gap-2 items-center">
@@ -337,6 +461,79 @@ const VolunteersManager = () => {
               className="mt-8 text-sm font-bold text-text-body/40 hover:text-primary transition-colors"
             >
               Discard Export
+            </button>
+          </div>
+        </div>
+      )}
+
+      <input
+        ref={replacePhotoInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={onReplacePhotoChange}
+      />
+
+      {showDocsModal && docsVolunteer && (
+        <div className="fixed inset-0 z-[220] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-8 relative">
+            <button
+              type="button"
+              onClick={() => { setShowDocsModal(false); setDocsVolunteer(null); }}
+              className="absolute top-6 right-6 p-2 rounded-xl bg-bg hover:bg-border text-text-body font-black"
+            >
+              ✕
+            </button>
+            <h3 className="text-xl font-black text-primary mb-6 pr-10">Submitted documents — {docsVolunteer.fullName}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-body/40 mb-2">Government ID ({docsVolunteer.govIdType})</p>
+                <a href={docsVolunteer.govIdImage} target="_blank" rel="noreferrer" className="block rounded-2xl border border-border overflow-hidden bg-bg">
+                  <img src={docsVolunteer.govIdImage} alt="Government ID" className="w-full h-auto object-contain max-h-72" />
+                </a>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-body/40 mb-2">Driving license</p>
+                {docsVolunteer.hasDrivingLicense && docsVolunteer.drivingLicenseImageUrl ? (
+                  <a href={docsVolunteer.drivingLicenseImageUrl} target="_blank" rel="noreferrer" className="block rounded-2xl border border-border overflow-hidden bg-bg">
+                    <img src={docsVolunteer.drivingLicenseImageUrl} alt="Driving license" className="w-full h-auto object-contain max-h-72" />
+                  </a>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm font-bold text-text-body/50">
+                    {docsVolunteer.hasDrivingLicense ? "No upload on file" : "Not applicable (No license declared)"}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showQrModal && qrVolunteer && (qrVolunteer.user?._id || qrVolunteer.user) && (
+        <div className="fixed inset-0 z-[220] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center relative">
+            <button
+              type="button"
+              onClick={() => { setShowQrModal(false); setQrVolunteer(null); }}
+              className="absolute top-4 right-4 p-2 rounded-xl bg-bg hover:bg-border font-black text-text-body"
+            >
+              ✕
+            </button>
+            <h3 className="text-lg font-black text-primary mb-2">Emergency member card</h3>
+            <p className="text-xs font-medium text-text-body/60 mb-6">{qrVolunteer.fullName}</p>
+            <div id="admin-member-qr-wrap" className="flex justify-center bg-white p-4 rounded-2xl border border-border mb-6">
+              <QRCode
+                value={`${window.location.origin}/member-card/${qrVolunteer.user?._id || qrVolunteer.user}`}
+                size={180}
+                level="M"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={downloadAdminQrPng}
+              className="w-full py-3 rounded-xl bg-primary text-white font-black text-xs uppercase tracking-widest shadow-lg"
+            >
+              Download PNG
             </button>
           </div>
         </div>
