@@ -82,6 +82,14 @@ const volunteerSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  hasDrivingLicense: {
+    type: Boolean,
+    default: false,
+  },
+  drivingLicenseImageUrl: {
+    type: String,
+    default: "",
+  },
   bloodGroup: {
     type: String,
     required: true,

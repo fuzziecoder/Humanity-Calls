@@ -9,6 +9,8 @@ import {
   activeToTemporaryTemplate,
   temporaryToInactiveTemplate,
   temporaryToActiveTemplate,
+  profilePictureRemovedByAdminTemplate,
+  profilePictureReplacedByAdminTemplate,
 } from "../utils/emailTemplates.js";
 
 export const applyVolunteer = async (req, res) => {
@@ -35,6 +37,8 @@ export const applyVolunteer = async (req, res) => {
       termsAccepted,
       govIdImage,
       profilePicture,
+      hasDrivingLicense,
+      drivingLicenseImageUrl,
     } = req.body;
 
     // Public submission: No user check required here anymore.
@@ -58,6 +62,16 @@ export const applyVolunteer = async (req, res) => {
       }
     }
 
+    const hasDl =
+      hasDrivingLicense === true ||
+      hasDrivingLicense === "true" ||
+      hasDrivingLicense === "yes";
+    if (hasDl && !drivingLicenseImageUrl) {
+      return res.status(400).json({
+        message: "Please upload a valid driving license image when you select Yes.",
+      });
+    }
+
     const newVolunteer = new Volunteer({
       user: userId,
       fullName,
@@ -77,6 +91,8 @@ export const applyVolunteer = async (req, res) => {
       govIdType,
       govIdImage,
       profilePicture,
+      hasDrivingLicense: hasDl,
+      drivingLicenseImageUrl: hasDl ? drivingLicenseImageUrl : "",
       bloodGroup,
       dob,
       joiningDate,
@@ -140,10 +156,9 @@ export const getVolunteers = async (req, res) => {
   try {
     const { status } = req.query;
     const filter = status ? { status } : {};
-    const volunteers = await Volunteer.find(filter).populate(
-      "user",
-      "name email"
-    );
+    const volunteers = await Volunteer.find(filter)
+      .populate("user", "name email")
+      .sort({ joiningDate: 1, createdAt: 1 });
     res.status(200).json(volunteers);
   } catch (error) {
     res
@@ -399,5 +414,63 @@ export const deleteVolunteer = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error deleting volunteer", error: error.message });
+  }
+};
+
+export const adminRemoveVolunteerProfilePicture = async (req, res) => {
+  try {
+    const volunteer = await Volunteer.findById(req.params.id);
+    if (!volunteer) {
+      return res.status(404).json({ message: "Volunteer not found" });
+    }
+
+    volunteer.profilePicture = "";
+    await volunteer.save();
+
+    const senderEmail = process.env.BREVO_SENDER_EMAIL;
+    const senderName = process.env.BREVO_SENDER_NAME || "Humanity Calls";
+    if (volunteer.email && senderEmail && process.env.BREVO_API_KEY) {
+      triggerEmail({
+        sender: { name: senderName, email: senderEmail },
+        to: [{ email: volunteer.email, name: volunteer.fullName }],
+        subject: "Please upload a new profile photo — Humanity Calls",
+        htmlContent: profilePictureRemovedByAdminTemplate(volunteer.fullName),
+      }).catch((err) => console.error("Profile removal email failed:", err.message));
+    }
+
+    res.status(200).json({ message: "Profile picture removed", volunteer });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating volunteer", error: error.message });
+  }
+};
+
+export const adminReplaceVolunteerProfilePicture = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No image uploaded" });
+    }
+
+    const volunteer = await Volunteer.findById(req.params.id);
+    if (!volunteer) {
+      return res.status(404).json({ message: "Volunteer not found" });
+    }
+
+    volunteer.profilePicture = req.file.path;
+    await volunteer.save();
+
+    const senderEmail = process.env.BREVO_SENDER_EMAIL;
+    const senderName = process.env.BREVO_SENDER_NAME || "Humanity Calls";
+    if (volunteer.email && senderEmail && process.env.BREVO_API_KEY) {
+      triggerEmail({
+        sender: { name: senderName, email: senderEmail },
+        to: [{ email: volunteer.email, name: volunteer.fullName }],
+        subject: "Your profile photo was updated by admin — Humanity Calls",
+        htmlContent: profilePictureReplacedByAdminTemplate(volunteer.fullName),
+      }).catch((err) => console.error("Profile replace email failed:", err.message));
+    }
+
+    res.status(200).json({ message: "Profile picture updated", volunteer });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating profile picture", error: error.message });
   }
 };

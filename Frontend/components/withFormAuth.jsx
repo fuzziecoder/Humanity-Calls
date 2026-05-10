@@ -8,7 +8,6 @@ const withFormAuth = (WrappedComponent, options = {}) => {
   return (props) => {
     const { user } = useUser();
     const location = useLocation();
-    const hasSignedInBefore = localStorage.getItem("hc_has_signed_in_once") === "true";
 
     const savePendingFormData = (data) => {
       if (!data) return;
@@ -35,9 +34,6 @@ const withFormAuth = (WrappedComponent, options = {}) => {
 
     // This effect ensures that name and email are synced from user context
     useEffect(() => {
-      if (user) {
-        localStorage.setItem("hc_has_signed_in_once", "true");
-      }
       if (user && props.setFormData) {
         props.setFormData((prev) => {
           const updates = {};

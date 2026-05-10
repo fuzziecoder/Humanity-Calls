@@ -91,6 +91,13 @@ export const volunteerApplicationReceivedTemplate = (vol) => {
     ],
     ["Skills Offered", vol.skills || "N/A"],
     ["Gov ID Type", vol.govIdType || "N/A"],
+    ["Valid Driving License", vol.hasDrivingLicense ? "Yes" : "No"],
+    [
+      "Driving License Document",
+      vol.hasDrivingLicense && vol.drivingLicenseImageUrl
+        ? `<a href="${vol.drivingLicenseImageUrl}" target="_blank" rel="noreferrer">View uploaded license</a>`
+        : "N/A",
+    ],
     ["Time Commitment", formatArray(vol.timeCommitment)],
     ["Working Mode", formatArray(vol.workingMode)],
     ["Role Preference", formatArray(vol.rolePreference)],
@@ -244,7 +251,14 @@ export const volunteerApprovalTemplate = (vol, frontendUrl, password) => {
  * Template 3 — Birthday notification: wishing the volunteer a happy birthday
  */
 export const birthdayWishTemplate = (volunteerName) => {
+  const celebrateImg =
+    "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=1200&q=80";
   const inner = `
+    <tr>
+      <td style="padding:0;">
+        <img src="${celebrateImg}" alt="Birthday wishes" style="width:100%;max-width:620px;display:block;height:auto;border-bottom:4px solid #C62828;" />
+      </td>
+    </tr>
     <!-- Transactional-style Message Content -->
     <tr>
       <td style="padding:40px 32px 40px;">
@@ -370,6 +384,40 @@ export const temporaryToActiveTemplate = () =>
       "Keep inspiring and making a difference!",
     ],
   });
+
+export const profilePictureRemovedByAdminTemplate = (memberName) => {
+  const inner = `
+    <tr>
+      <td style="padding:40px 32px 40px;">
+        <div style="color:#333;font-size:16px;line-height:1.7;">
+          <p style="margin-top:0;">Dear <strong>${memberName}</strong>,</p>
+          <p>Your profile photo on the Humanity Calls platform was removed by an administrator because it did not meet our guidelines.</p>
+          <p>Please sign in to your profile and upload a clear, appropriate photo at your earliest convenience.</p>
+          <p style="margin-bottom:0;">Thank you for helping us keep our community respectful and professional.</p>
+          <p style="margin-top:24px;margin-bottom:0;">Warm regards,<br><strong>Team Humanity Calls</strong></p>
+        </div>
+      </td>
+    </tr>
+  `;
+  return wrap(inner, "Profile photo update requested");
+};
+
+export const profilePictureReplacedByAdminTemplate = (memberName) => {
+  const inner = `
+    <tr>
+      <td style="padding:40px 32px 40px;">
+        <div style="color:#333;font-size:16px;line-height:1.7;">
+          <p style="margin-top:0;">Dear <strong>${memberName}</strong>,</p>
+          <p>Your profile photo on the Humanity Calls platform was updated by an administrator with an approved image.</p>
+          <p>If you have any questions, please reply to our support mailbox or contact your coordinator.</p>
+          <p style="margin-bottom:0;">Thank you for being part of Humanity Calls.</p>
+          <p style="margin-top:24px;margin-bottom:0;">Warm regards,<br><strong>Team Humanity Calls</strong></p>
+        </div>
+      </td>
+    </tr>
+  `;
+  return wrap(inner, "Your profile photo was updated");
+};
 
 export const reimbursementApprovedTemplate = (memberName, amount) => {
   const inner = `

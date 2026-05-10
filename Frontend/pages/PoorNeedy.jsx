@@ -8,6 +8,7 @@ import { IMAGE_ALTS } from "../constants";
 import { sendEmail } from "../utils/email";
 import withFormAuth from "../components/withFormAuth";
 import axios from "axios";
+import { getAuthToken } from "../utils/authToken.js";
 import { toast } from "react-toastify";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -145,7 +146,7 @@ const PoorNeedy = ({
     setLoading(true);
 
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       await axios.post(
@@ -188,7 +189,7 @@ const PoorNeedy = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       await axios.post(

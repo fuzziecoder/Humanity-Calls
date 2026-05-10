@@ -1,8 +1,33 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FaWpforms, FaSearch, FaTrash, FaDownload } from "react-icons/fa";
+import { FaWpforms, FaSearch, FaTrash, FaDownload, FaFileExcel, FaFilePdf } from "react-icons/fa";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { useOutletContext } from "react-router-dom";
+
+const flattenRows = (obj, prefix = "") => {
+  const out = [];
+  if (!obj || typeof obj !== "object") return out;
+  for (const [k, v] of Object.entries(obj)) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v !== null && typeof v === "object" && !Array.isArray(v) && !(v instanceof Date)) {
+      out.push(...flattenRows(v, key));
+    } else {
+      const val =
+        v instanceof Date
+          ? v.toISOString()
+          : Array.isArray(v)
+            ? v.join(", ")
+            : v === undefined || v === null
+              ? ""
+              : String(v);
+      out.push([key, val]);
+    }
+  }
+  return out;
+};
 
 const TABS = [
   { id: "blood_donation_public", label: "Blood Donation (Public)" },
@@ -79,7 +104,7 @@ const FormsManager = () => {
     }
   };
 
-  const downloadSubmission = (row) => {
+  const downloadSubmissionJson = (row) => {
     const payload = {
       id: row._id,
       kind: row.kind,
@@ -96,6 +121,44 @@ const FormsManager = () => {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+  };
+
+  const downloadSubmissionExcel = (row) => {
+    const dataPayload = row.data && typeof row.data === "object" ? row.data : {};
+    const rows = [
+      ["kind", row.kind],
+      ["submittedAt", row.createdAt ? new Date(row.createdAt).toISOString() : ""],
+      ["userEmail", row.user?.email || ""],
+      ...flattenRows(dataPayload),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "submission");
+    XLSX.writeFile(wb, `${row.kind || "form"}_${row._id}.xlsx`);
+  };
+
+  const downloadSubmissionPdf = (row) => {
+    const dataPayload = row.data && typeof row.data === "object" ? row.data : {};
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text(`Form submission — ${row.kind}`, 14, 16);
+    doc.setFontSize(10);
+    let y = 26;
+    doc.text(`Submitted: ${row.createdAt ? new Date(row.createdAt).toLocaleString("en-GB") : "—"}`, 14, y);
+    y += 7;
+    if (row.user?.email) {
+      doc.text(`User: ${row.user.email}`, 14, y);
+      y += 7;
+    }
+    const body = flattenRows(dataPayload);
+    autoTable(doc, {
+      head: [["Field", "Value"]],
+      body,
+      startY: y + 4,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [198, 40, 40] },
+    });
+    doc.save(`${row.kind || "form"}_${row._id}.pdf`);
   };
 
   const renderDataRows = (data) => {
@@ -183,28 +246,61 @@ const FormsManager = () => {
                     </div>
                   </div>
                   {activeTab !== "blood_donation_public" && activeTab !== "blood_requests" && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 justify-end">
                       <button
-                        onClick={() => downloadSubmission(r)}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary font-black text-[11px] hover:bg-primary/15"
+                        type="button"
+                        onClick={() => downloadSubmissionJson(r)}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800 text-white font-black text-[10px] hover:bg-slate-900"
                       >
-                        <FaDownload /> Download
+                        <FaDownload /> JSON
                       </button>
                       <button
+                        type="button"
+                        onClick={() => downloadSubmissionExcel(r)}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 text-white font-black text-[10px] hover:bg-emerald-700"
+                      >
+                        <FaFileExcel /> Excel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadSubmissionPdf(r)}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-red-600 text-white font-black text-[10px] hover:bg-red-700"
+                      >
+                        <FaFilePdf /> PDF
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => deleteRow(r._id)}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blood/10 text-blood font-black text-[11px] hover:bg-blood/15"
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-blood/10 text-blood font-black text-[10px] hover:bg-blood/15"
                       >
                         <FaTrash /> Delete
                       </button>
                     </div>
                   )}
                   {(activeTab === "blood_donation_public" || activeTab === "blood_requests") && (
-                    <button
-                      onClick={() => downloadSubmission(r)}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary font-black text-[11px] hover:bg-primary/15"
-                    >
-                      <FaDownload /> Download
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => downloadSubmissionJson(r)}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800 text-white font-black text-[10px] hover:bg-slate-900"
+                      >
+                        <FaDownload /> JSON
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadSubmissionExcel(r)}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 text-white font-black text-[10px] hover:bg-emerald-700"
+                      >
+                        <FaFileExcel /> Excel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadSubmissionPdf(r)}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-red-600 text-white font-black text-[10px] hover:bg-red-700"
+                      >
+                        <FaFilePdf /> PDF
+                      </button>
+                    </div>
                   )}
                 </div>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">

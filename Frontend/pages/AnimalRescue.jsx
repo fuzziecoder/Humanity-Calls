@@ -13,6 +13,7 @@ import { getCurrentLocationLabel } from "../utils/location";
 import { uploadPublicImage } from "../utils/publicForms";
 import { FaPaperclip, FaCloudUploadAlt, FaTrashAlt, FaHeart, FaCheckCircle, FaPaw } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import { getAuthToken } from "../utils/authToken.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -171,7 +172,7 @@ const AnimalRescue = ({
         animalImageUrl: finalImageUrl
       };
 
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       await axios.post(
@@ -218,7 +219,7 @@ const AnimalRescue = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       await axios.post(

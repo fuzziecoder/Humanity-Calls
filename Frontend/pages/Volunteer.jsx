@@ -9,6 +9,9 @@ import ProfilePictureCropper from "../components/ProfilePictureCropper";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { getCurrentLocationLabel } from "../utils/location";
+import { getAuthToken } from "../utils/authToken.js";
+import { useUser } from "../context/UserContext";
+import { Navigate } from "react-router-dom";
 import { FaCheckCircle, FaTimes, FaCamera, FaInfoCircle, FaPen, FaShareAlt, FaCloudUploadAlt, FaTrashAlt } from "react-icons/fa";
 import hclogo from "../assets/humanitycallslogo.avif";
 
@@ -39,6 +42,9 @@ const Volunteer = ({
   // Crop modal state
   const [rawProfileImage, setRawProfileImage] = useState(null);
   const [showCropModal, setShowCropModal] = useState(false);
+  const { loading: authLoading } = useUser();
+  const [selectedDlFile, setSelectedDlFile] = useState(null);
+  const [dlPreview, setDlPreview] = useState(null);
 
   // Helper to convert base64 to File object
   const base64ToFile = (base64String, fileName) => {
@@ -54,6 +60,36 @@ const Volunteer = ({
     return new File([u8arr], fileName, { type: mime });
   };
 
+  const [formData, setFormData] = useState(() => {
+    const saved = loadPendingFormData();
+    const defaults = {
+      fullName: user?.name || "",
+      email: user?.email || "",
+      phone: "",
+      emergencyContact: "",
+      gender: "",
+      interest: "",
+      occupation: "",
+      occupationDetail: "",
+      skills: "",
+      timeCommitment: "",
+      workingMode: "",
+      rolePreference: "",
+      govIdType: "",
+      govIdImage: "",
+      hasDrivingLicense: "",
+      drivingLicenseImageUrl: "",
+      profilePicture: "",
+      bloodGroup: "",
+      dob: "",
+      joiningDate: "",
+      termsAccepted: false,
+      locationAddress: "",
+      deviceDonationChoices: [],
+    };
+    return saved ? { ...defaults, ...saved } : defaults;
+  });
+
   useEffect(() => {
     if (formData.govIdImage && formData.govIdImage.startsWith("data:")) {
       setGovIdPreview(formData.govIdImage);
@@ -64,6 +100,11 @@ const Volunteer = ({
       setProfilePreview(formData.profilePicture);
       const file = base64ToFile(formData.profilePicture, "profile.png");
       setSelectedProfileFile(file);
+    }
+    if (formData.drivingLicenseImageUrl && formData.drivingLicenseImageUrl.startsWith("data:")) {
+      setDlPreview(formData.drivingLicenseImageUrl);
+      const file = base64ToFile(formData.drivingLicenseImageUrl, "dl.png");
+      setSelectedDlFile(file);
     }
   }, []);
 
@@ -88,7 +129,7 @@ const Volunteer = ({
         setIsCheckingStatus(false);
         return;
       }
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const headers = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
       try {
@@ -154,34 +195,6 @@ const Volunteer = ({
     return () => ctx.revert();
   }, [i18n.language]);
 
-  const [formData, setFormData] = useState(() => {
-    const saved = loadPendingFormData();
-    const defaults = {
-      fullName: user?.name || "",
-      email: user?.email || "",
-      phone: "",
-      emergencyContact: "",
-      gender: "",
-      interest: "",
-      occupation: "",
-      occupationDetail: "",
-      skills: "",
-      timeCommitment: "",
-      workingMode: "",
-      rolePreference: "",
-      govIdType: "",
-      govIdImage: "",
-      profilePicture: "",
-      bloodGroup: "",
-      dob: "",
-      joiningDate: "",
-      termsAccepted: false,
-      locationAddress: "",
-      deviceDonationChoices: [],
-    };
-    return saved ? { ...defaults, ...saved } : defaults;
-  });
-
   useEffect(() => {
     if (user) {
       setFormData((prev) => ({
@@ -222,6 +235,10 @@ const Volunteer = ({
         // Open crop modal instead of using directly
         setRawProfileImage(base64String);
         setShowCropModal(true);
+      } else if (type === "dl") {
+        setSelectedDlFile(file);
+        setDlPreview(base64String);
+        setFormData((prev) => ({ ...prev, drivingLicenseImageUrl: base64String }));
       } else {
         setSelectedFile(file);
         setGovIdPreview(base64String);
@@ -301,9 +318,23 @@ const Volunteer = ({
       return;
     }
 
+    if (!formData.hasDrivingLicense) {
+      toast.error("Please indicate whether you have a valid driving license.");
+      return;
+    }
+    if (formData.hasDrivingLicense === "yes") {
+      const hasDl =
+        selectedDlFile ||
+        /^https?:\/\//i.test(String(formData.drivingLicenseImageUrl || ""));
+      if (!hasDl) {
+        toast.error("Please upload a clear image of your driving license.");
+        return;
+      }
+    }
+
     setLoading(true);
     try {
-      const token = sessionStorage.getItem("token");
+      const token = getAuthToken();
       const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
       // 1. Upload Profile Picture
@@ -332,11 +363,32 @@ const Volunteer = ({
       );
       const govIdUrl = govIdResponse.data.imageUrl;
 
+      let drivingLicenseImageUrl = "";
+      if (formData.hasDrivingLicense === "yes") {
+        if (selectedDlFile) {
+          const dlData = new FormData();
+          dlData.append("image", selectedDlFile);
+          const dlResponse = await axios.post(
+            `${import.meta.env.VITE_API_URL}/volunteers/upload`,
+            dlData,
+            {
+              headers: { "Content-Type": "multipart/form-data", ...authHeaders },
+              withCredentials: true,
+            },
+          );
+          drivingLicenseImageUrl = dlResponse.data.imageUrl;
+        } else if (/^https?:\/\//i.test(String(formData.drivingLicenseImageUrl || ""))) {
+          drivingLicenseImageUrl = formData.drivingLicenseImageUrl;
+        }
+      }
+
       // 3. Submit full application
-      const finalData = { 
-        ...formData, 
-        govIdImage: govIdUrl, 
-        profilePicture: profileUrl 
+      const finalData = {
+        ...formData,
+        govIdImage: govIdUrl,
+        profilePicture: profileUrl,
+        hasDrivingLicense: formData.hasDrivingLicense === "yes",
+        drivingLicenseImageUrl,
       };
 
       await axios.post(
@@ -362,6 +414,8 @@ const Volunteer = ({
         rolePreference: [],
         govIdType: "",
         govIdImage: "",
+        hasDrivingLicense: "",
+        drivingLicenseImageUrl: "",
         profilePicture: "",
         bloodGroup: "",
         dob: "",
@@ -372,8 +426,10 @@ const Volunteer = ({
       });
       setSelectedFile(null);
       setSelectedProfileFile(null);
+      setSelectedDlFile(null);
       setGovIdPreview(null);
       setProfilePreview(null);
+      setDlPreview(null);
       setHasScrolledToBottom(false);
     } catch (error) {
       console.error("Upload error:", error);
@@ -477,6 +533,20 @@ const Volunteer = ({
       }
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="bg-white min-h-screen py-24 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Navigate to={`/become-a-member?redirect=${encodeURIComponent("/volunteer")}`} replace />
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen py-24" ref={containerRef}>
@@ -833,6 +903,83 @@ const Volunteer = ({
                       </div>
                     )}
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100 mt-2">
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-xs text-gray-500 ml-1">
+                      Do you have a valid driving license? *
+                    </label>
+                    <div className="flex flex-wrap gap-6 items-center">
+                      <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-sm text-gray-700">
+                        <input
+                          type="radio"
+                          name="hasDrivingLicense"
+                          value="yes"
+                          checked={formData.hasDrivingLicense === "yes"}
+                          onChange={handleChange}
+                          className="accent-primary h-4 w-4"
+                        />
+                        Yes — upload DL
+                      </label>
+                      <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-sm text-gray-700">
+                        <input
+                          type="radio"
+                          name="hasDrivingLicense"
+                          value="no"
+                          checked={formData.hasDrivingLicense === "no"}
+                          onChange={handleChange}
+                          className="accent-primary h-4 w-4"
+                        />
+                        No
+                      </label>
+                    </div>
+                  </div>
+                  {formData.hasDrivingLicense === "yes" ? (
+                    <div className="space-y-1 md:col-span-2">
+                      <label className="text-xs text-gray-500 ml-1">
+                        Upload driving license image *
+                      </label>
+                      <div className="relative group">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, "dl")}
+                          className="hidden"
+                          id="dl-upload"
+                        />
+                        <label
+                          htmlFor="dl-upload"
+                          className={`w-full flex flex-col items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-all ${dlPreview ? "border-primary bg-primary/5 h-32" : "border-border hover:border-primary/50 h-12"}`}
+                        >
+                          {dlPreview ? (
+                            <div className="relative w-full h-full flex items-center justify-center">
+                              <img
+                                src={dlPreview}
+                                alt="Driving license preview"
+                                className="h-full w-auto object-contain rounded shadow-sm"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded">
+                                <span className="text-white text-xs font-bold uppercase tracking-widest">
+                                  Change image
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <FaCamera className="text-gray-400" />
+                              <span className="text-sm font-medium text-gray-500">
+                                Upload license (JPEG / PNG)
+                              </span>
+                            </div>
+                          )}
+                        </label>
+                      </div>
+                      <p className="text-[11px] text-gray-400 font-medium">
+                        Required when you answer Yes. Admin may verify this document.
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="space-y-1">
